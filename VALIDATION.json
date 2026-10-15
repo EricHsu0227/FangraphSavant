@@ -1,0 +1,263 @@
+{
+  "verifiedAt": "2026-10-15T04:55:41.472Z",
+  "checks": [
+    {
+      "page": "season",
+      "year": 2021,
+      "batters": 1374,
+      "pitchers": 909,
+      "expectedBatting": 872,
+      "expectedPitching": 909,
+      "teams": 30,
+      "series": 9
+    },
+    {
+      "page": "season",
+      "year": 2022,
+      "batters": 794,
+      "pitchers": 871,
+      "expectedBatting": 693,
+      "expectedPitching": 871,
+      "teams": 30,
+      "series": 11
+    },
+    {
+      "page": "season",
+      "year": 2023,
+      "batters": 769,
+      "pitchers": 863,
+      "expectedBatting": 656,
+      "expectedPitching": 863,
+      "teams": 30,
+      "series": 11
+    },
+    {
+      "page": "season",
+      "year": 2024,
+      "batters": 742,
+      "pitchers": 855,
+      "expectedBatting": 651,
+      "expectedPitching": 855,
+      "teams": 30,
+      "series": 11
+    },
+    {
+      "page": "season",
+      "year": 2025,
+      "batters": 765,
+      "pitchers": 873,
+      "expectedBatting": 673,
+      "expectedPitching": 873,
+      "teams": 30,
+      "series": 11
+    },
+    {
+      "page": "season",
+      "year": 2026,
+      "batters": 751,
+      "pitchers": 868,
+      "expectedBatting": 661,
+      "expectedPitching": 868,
+      "teams": 30,
+      "series": 11
+    },
+    {
+      "page": "2024 World Series",
+      "teams": [
+        "Los Angeles Dodgers",
+        "New York Yankees"
+      ],
+      "wins": [
+        4,
+        1
+      ],
+      "games": 5
+    },
+    {
+      "page": "player",
+      "player": 592450,
+      "summary": {
+        "history": 6,
+        "splits": [
+          {
+            "split": "all",
+            "pa": 704,
+            "avg": 0.322,
+            "woba": 0.475755
+          },
+          {
+            "split": "h",
+            "pa": 341,
+            "avg": 0.328,
+            "woba": 0.495183
+          },
+          {
+            "split": "a",
+            "pa": 363,
+            "avg": 0.316,
+            "woba": 0.457806
+          },
+          {
+            "split": "vl",
+            "pa": 184,
+            "avg": 0.311,
+            "woba": 0.500086
+          },
+          {
+            "split": "vr",
+            "pa": 520,
+            "avg": 0.326,
+            "woba": 0.467374
+          }
+        ]
+      }
+    },
+    {
+      "page": "Statcast contact",
+      "player": 592450,
+      "summary": {
+        "ALL": {
+          "bbe": 388,
+          "trackedEV": 388,
+          "ev": 96.2,
+          "hardhit": 61.3,
+          "barrel": 26.9,
+          "trackedBarrel": 391
+        },
+        "L": {
+          "bbe": 86,
+          "trackedEV": 86,
+          "ev": 97,
+          "hardhit": 67.4,
+          "barrel": null,
+          "trackedBarrel": 0
+        },
+        "R": {
+          "bbe": 302,
+          "trackedEV": 302,
+          "ev": 96,
+          "hardhit": 59.6,
+          "barrel": null,
+          "trackedBarrel": 0
+        },
+        "home": {
+          "bbe": 183,
+          "trackedEV": 183,
+          "ev": 96.1,
+          "hardhit": 59.6,
+          "barrel": null,
+          "trackedBarrel": 0
+        },
+        "away": {
+          "bbe": 205,
+          "trackedEV": 205,
+          "ev": 96.4,
+          "hardhit": 62.9,
+          "barrel": null,
+          "trackedBarrel": 0
+        }
+      }
+    },
+    {
+      "page": "player",
+      "player": 543037,
+      "summary": {
+        "history": 5,
+        "splits": [
+          {
+            "split": "all",
+            "pa": 390,
+            "avg": 0.22,
+            "woba": 0.285789
+          },
+          {
+            "split": "h",
+            "pa": 204,
+            "avg": 0.24,
+            "woba": 0.304926
+          },
+          {
+            "split": "a",
+            "pa": 186,
+            "avg": 0.198,
+            "woba": 0.264903
+          },
+          {
+            "split": "vl",
+            "pa": 228,
+            "avg": 0.209,
+            "woba": 0.273339
+          },
+          {
+            "split": "vr",
+            "pa": 162,
+            "avg": 0.235,
+            "woba": 0.303235
+          }
+        ]
+      }
+    },
+    {
+      "page": "Statcast contact",
+      "player": 543037,
+      "summary": {
+        "ALL": {
+          "bbe": 256,
+          "trackedEV": 256,
+          "ev": 89.7,
+          "hardhit": 39.5,
+          "barrel": null,
+          "trackedBarrel": 0
+        },
+        "L": {
+          "bbe": 116,
+          "trackedEV": 116,
+          "ev": 90.8,
+          "hardhit": 39.7,
+          "barrel": null,
+          "trackedBarrel": 0
+        },
+        "R": {
+          "bbe": 114,
+          "trackedEV": 114,
+          "ev": 88,
+          "hardhit": 36,
+          "barrel": null,
+          "trackedBarrel": 0
+        },
+        "home": {
+          "bbe": 135,
+          "trackedEV": 135,
+          "ev": 89,
+          "hardhit": 38.5,
+          "barrel": null,
+          "trackedBarrel": 0
+        },
+        "away": {
+          "bbe": 121,
+          "trackedEV": 121,
+          "ev": 90.3,
+          "hardhit": 40.5,
+          "barrel": null,
+          "trackedBarrel": 0
+        }
+      }
+    },
+    {
+      "page": "2024 Cubs team",
+      "rosterPlayers": 56,
+      "ianHapp": true
+    },
+    {
+      "page": "2024 World Series game 1 box score",
+      "gameId": 775300,
+      "home": "Los Angeles Dodgers",
+      "away": "New York Yankees"
+    }
+  ],
+  "limits": [
+    "Direct Baseball Savant CSV returned HTTP 403 during source checks. MLB metric logs and local CSV import remain available.",
+    "No browser-control skill is available in this managed environment, so interactive browser QA was not run.",
+    "MLB expectedStatistics can have a different model vintage than current Savant leaderboards."
+  ]
+}

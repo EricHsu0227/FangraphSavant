@@ -1,0 +1,49 @@
+{
+  "verified": "2026-10-15T06:56:15.357204+00:00",
+  "regressionTests": 20,
+  "realData": {
+    "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "game775300": {
+      "plays": 83,
+      "pitches": 307,
+      "xbaContacts": 59,
+      "allExpectedContactJoinsMatched": true,
+      "DHExcludesNonbattingPitchers": true
+    },
+    "game633681": {
+      "year": 2021,
+      "NLPitchersBatInSlot9": true,
+      "substitutionsPreserved": true
+    },
+    "fanGraphsOdds": {
+      "date": "2024-09-01",
+      "teams": 30,
+      "cubsProjectedWins": 83.98100280761719,
+      "cubsPlayoffPct": 6.739666312932968
+    },
+    "statcastPitcherSplits": {
+      "playerId": 543037,
+      "year": 2024,
+      "vsLHB": {
+        "pa": 228,
+        "woba": 0.273,
+        "xwoba": 0.29
+      },
+      "vsRHB": {
+        "pa": 162,
+        "woba": 0.303,
+        "xwoba": 0.313
+      },
+      "PAandWobaMatchMLB": true
+    }
+  },
+  "browserQA": "Unavailable: control-browser skill is not present. TypeScript, production build, data APIs and calculation regressions validated.",
+  "rosterResource": "Production platoon tables verified from FanGraphs, duplicate responsive tables removed. Current depth chart identifies its published 2027 season explicitly; global historical season does not relabel it."
+}

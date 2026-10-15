@@ -1,0 +1,6 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import {handleRequest,getSeason} from '../lib/service.mjs';
+const report=JSON.parse(fs.readFileSync('.sites-runtime/validation-report.json','utf8'));
+const rosterResponse=await handleRequest(new Request('http://site/api/baseball?view=team&year=2024&id=112'));assert.equal(rosterResponse.status,200);const roster=await rosterResponse.json();assert(roster.roster.length>25);assert(roster.roster.some(p=>p.person.fullName==='Ian Happ'));report.checks.push({page:'2024 Cubs team',rosterPlayers:roster.roster.length,ianHapp:true});
+const ws=getSeason(2024).series.find(s=>s.type==='W'),first=ws.games[0],boxResponse=await handleRequest(new Request(`http://site/api/baseball?view=game&year=2024&id=${first.id}`));assert.equal(boxResponse.status,200);const box=await boxResponse.json();assert.equal(box.teams.home.team.id,119);assert.equal(box.teams.away.team.id,147);assert(box.teams.home.batters.length>=9);report.checks.push({page:'2024 World Series game 1 box score',gameId:first.id,home:box.teams.home.team.name,away:box.teams.away.team.name});
+const unknown=await handleRequest(new Request('http://site/api/baseball?view=team&year=2024&id=999'));assert.equal(unknown.status,400);
+fs.writeFileSync('VALIDATION.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report.checks.slice(-2),null,2));

@@ -1,0 +1,25 @@
+{
+  "verified": "2026-10-15T10:29:07.639758+00:00",
+  "tests": 36,
+  "checks": {
+    "historicalRoster": "2016-11-02 Cubs: 25 source records, Bryant 39 HR, Rizzo 32 HR season rates",
+    "historicalGame": "2016 WS G7 game 487637 located via MLB dated schedule",
+    "standings": "2024-06-15 Cubs 34\u201337; wildcard separate source records",
+    "winProbability": "2024 WS G1: 83 PAs, final home WP100%, walkoff WPA71.8 pts",
+    "boxScopes": "Judge regular2024 HR58/PA704 versus playoffsHR3/PA64",
+    "fielding": "94 Cubs player-position records2024",
+    "simulation": "Seeded repeatability; 100-game box-score reconciliation; 500-trial aggregates; 2/3/4/5/30-team tournaments",
+    "statcastFilters": "Hand/month/location/pitch filters reach the same calculator; full and tracked expected coverage stay distinct",
+    "rules": "As-played games carry scheduled innings; regular-season automatic-runner eligibility starts2020, postseason disables it."
+  },
+  "browserQA": "Unavailable: no control-browser skill; TypeScript, production build, source API and calculation checks used.",
+  "modelLimit": "Retrospective complete-season rates with simplified baserunning and fatigue; no calibrated forecast, defense or park model.",
+  "productionChecks": {
+    "completed": "2026-10-15T10:36:17.712702+00:00",
+    "coreEndpoints": 17,
+    "failures": 0,
+    "privacy": "Unauthenticated API access HTTP403; native policy owner-only",
+    "realCSV": "Judge2024 ALL704PA, vsL184PA, vsR520PA; filtered June/home/L/FF sample6PA; Cole vsLHB228PA/vsRHB162PA; 2024WSG1 Judge22pitches5PA",
+    "postseasonBracket": "Fresh MLB2024 schedule:11series, WorldSeries4\u20131"
+  }
+}

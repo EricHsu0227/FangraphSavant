@@ -1,0 +1,140 @@
+{
+  "verified": "2026-10-15T18:01:05.004Z",
+  "checks": [
+    {
+      "name": "game",
+      "plays": 83,
+      "pitches": 307,
+      "sourceTimestamp": "20241026_033820"
+    },
+    {
+      "name": "savant",
+      "contacts": 59,
+      "parkCounts": 59,
+      "freeman": {
+        "xba": 0.98,
+        "homerParkCount": 30,
+        "batter": 518692,
+        "pitcher": 641482,
+        "pitchNumber": 1,
+        "ev": 109.8,
+        "la": 30
+      },
+      "bettsFlyout": {
+        "xba": 0.22,
+        "homerParkCount": 1,
+        "batter": 605141,
+        "pitcher": 543037,
+        "pitchNumber": 3,
+        "ev": 94.8,
+        "la": 28
+      }
+    },
+    {
+      "name": "career",
+      "totals": {
+        "g": 2,
+        "groundOuts": 1,
+        "airOuts": 3,
+        "b2": 1,
+        "b3": 0,
+        "hr": 0,
+        "so": 0,
+        "bb": 0,
+        "ibb": 0,
+        "h": 1,
+        "hbp": 0,
+        "avg": 0.2,
+        "ab": 5,
+        "obp": 0.2,
+        "slg": 0.4,
+        "ops": 0.6,
+        "gdp": 1,
+        "groundIntoTriplePlay": 0,
+        "pitches": 14,
+        "pa": 5,
+        "tb": 2,
+        "rbi": 0,
+        "leftOnBase": 2,
+        "sh": 0,
+        "sf": 0,
+        "babip": 0.2,
+        "groundOutsToAirouts": 0.33,
+        "catchersInterference": 0,
+        "atBatsPerHomeRun": null,
+        "woba": 0.2508
+      },
+      "scope": "Career regular season, through latest available MLB data"
+    },
+    {
+      "name": "postseason",
+      "totals": {
+        "g": 2,
+        "groundOuts": 1,
+        "airOuts": 0,
+        "b2": 0,
+        "b3": 0,
+        "hr": 1,
+        "so": 0,
+        "bb": 0,
+        "ibb": 0,
+        "h": 1,
+        "hbp": 0,
+        "avg": 0.5,
+        "ab": 2,
+        "obp": 0.5,
+        "slg": 2,
+        "ops": 2.5,
+        "gdp": 0,
+        "groundIntoTriplePlay": 0,
+        "pitches": 5,
+        "pa": 2,
+        "tb": 4,
+        "rbi": 4,
+        "leftOnBase": 0,
+        "sh": 0,
+        "sf": 0,
+        "babip": 0,
+        "groundOutsToAirouts": 1,
+        "catchersInterference": 0,
+        "atBatsPerHomeRun": 2,
+        "woba": 1.025
+      },
+      "scope": "Career postseason, through latest available MLB data"
+    },
+    {
+      "name": "multi-postseason",
+      "pa": 10,
+      "seasons": [
+        {
+          "season": 2018,
+          "pa": 3
+        },
+        {
+          "season": 2024,
+          "pa": 7
+        }
+      ]
+    },
+    {
+      "name": "wp",
+      "plays": 83,
+      "finalWP": 100
+    },
+    {
+      "name": "live-cache-policy",
+      "cacheControl": "no-store"
+    }
+  ],
+  "browserQA": "Unavailable: no supported browser-control skill in this environment.",
+  "cloudflare": "Standalone build passes; owner account deployment requires account credentials and Access/D1 configuration.",
+  "failures": 0,
+  "automatedTests": {
+    "passed": 63,
+    "failed": 0
+  },
+  "typecheck": "passed",
+  "cloudflareBuild": "passed: owner JWT guard, protected assets and D1 migrations",
+  "legacyRealData": "research-real --reuse (fresh game feed), team-and-game passed",
+  "accountSync": "D1-equivalent SQLite integration: identity, origin, per-account isolation, CAS conflicts, deletion and 2.6MB background round-trip pass. Browser cross-device flow not exercised."
+}

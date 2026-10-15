@@ -1,0 +1,294 @@
+{
+  "capturedAt": "2026-10-15T15:20:38.462Z",
+  "source": "Official Baseball Savant aggregate search. No synthetic or inferred split expectations.",
+  "sources": [
+    {
+      "year": 2021,
+      "kind": "batting",
+      "hand": "ALL",
+      "rows": 1049,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C&hfGT=R%7C&player_type=batter&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:20Z"
+    },
+    {
+      "year": 2021,
+      "kind": "batting",
+      "hand": "L",
+      "rows": 894,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&pitcher_throws=L&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0",
+      "capturedAt": "2026-10-15T15:11:45Z"
+    },
+    {
+      "year": 2021,
+      "kind": "batting",
+      "hand": "R",
+      "rows": 1005,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&pitcher_throws=R",
+      "capturedAt": "2026-10-15T15:12:42Z"
+    },
+    {
+      "year": 2021,
+      "kind": "pitching",
+      "hand": "ALL",
+      "rows": 909,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C&hfGT=R%7C&player_type=pitcher&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:23Z"
+    },
+    {
+      "year": 2021,
+      "kind": "pitching",
+      "hand": "L",
+      "rows": 897,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=L",
+      "capturedAt": "2026-10-15T15:12:44Z"
+    },
+    {
+      "year": 2021,
+      "kind": "pitching",
+      "hand": "R",
+      "rows": 907,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=R",
+      "capturedAt": "2026-10-15T15:12:43Z"
+    },
+    {
+      "year": 2022,
+      "kind": "batting",
+      "hand": "ALL",
+      "rows": 693,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2022%7C&hfGT=R%7C&player_type=batter&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:20Z"
+    },
+    {
+      "year": 2022,
+      "kind": "batting",
+      "hand": "L",
+      "rows": 668,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&pitcher_throws=L&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0",
+      "capturedAt": "2026-10-15T15:11:45Z"
+    },
+    {
+      "year": 2022,
+      "kind": "batting",
+      "hand": "R",
+      "rows": 688,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&pitcher_throws=R",
+      "capturedAt": "2026-10-15T15:12:42Z"
+    },
+    {
+      "year": 2022,
+      "kind": "pitching",
+      "hand": "ALL",
+      "rows": 871,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2022%7C&hfGT=R%7C&player_type=pitcher&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:33Z"
+    },
+    {
+      "year": 2022,
+      "kind": "pitching",
+      "hand": "L",
+      "rows": 864,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=L",
+      "capturedAt": "2026-10-15T15:12:44Z"
+    },
+    {
+      "year": 2022,
+      "kind": "pitching",
+      "hand": "R",
+      "rows": 869,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=R",
+      "capturedAt": "2026-10-15T15:12:43Z"
+    },
+    {
+      "year": 2023,
+      "kind": "batting",
+      "hand": "ALL",
+      "rows": 656,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2023%7C&hfGT=R%7C&player_type=batter&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:33Z"
+    },
+    {
+      "year": 2023,
+      "kind": "batting",
+      "hand": "L",
+      "rows": 641,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&pitcher_throws=L&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0",
+      "capturedAt": "2026-10-15T15:11:45Z"
+    },
+    {
+      "year": 2023,
+      "kind": "batting",
+      "hand": "R",
+      "rows": 650,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&pitcher_throws=R",
+      "capturedAt": "2026-10-15T15:12:42Z"
+    },
+    {
+      "year": 2023,
+      "kind": "pitching",
+      "hand": "ALL",
+      "rows": 863,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2023%7C&hfGT=R%7C&player_type=pitcher&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:32Z"
+    },
+    {
+      "year": 2023,
+      "kind": "pitching",
+      "hand": "L",
+      "rows": 856,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=L",
+      "capturedAt": "2026-10-15T15:12:44Z"
+    },
+    {
+      "year": 2023,
+      "kind": "pitching",
+      "hand": "R",
+      "rows": 863,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=R",
+      "capturedAt": "2026-10-15T15:12:43Z"
+    },
+    {
+      "year": 2024,
+      "kind": "batting",
+      "hand": "ALL",
+      "rows": 651,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2024%7C&hfGT=R%7C&player_type=batter&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:45Z"
+    },
+    {
+      "year": 2024,
+      "kind": "batting",
+      "hand": "L",
+      "rows": 634,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&pitcher_throws=L&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0",
+      "capturedAt": "2026-10-15T15:11:45Z"
+    },
+    {
+      "year": 2024,
+      "kind": "batting",
+      "hand": "R",
+      "rows": 647,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&pitcher_throws=R",
+      "capturedAt": "2026-10-15T15:12:42Z"
+    },
+    {
+      "year": 2024,
+      "kind": "pitching",
+      "hand": "ALL",
+      "rows": 855,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2024%7C&hfGT=R%7C&player_type=pitcher&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:46Z"
+    },
+    {
+      "year": 2024,
+      "kind": "pitching",
+      "hand": "L",
+      "rows": 850,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=L",
+      "capturedAt": "2026-10-15T15:12:44Z"
+    },
+    {
+      "year": 2024,
+      "kind": "pitching",
+      "hand": "R",
+      "rows": 854,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=R",
+      "capturedAt": "2026-10-15T15:12:43Z"
+    },
+    {
+      "year": 2025,
+      "kind": "batting",
+      "hand": "ALL",
+      "rows": 673,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2025%7C&hfGT=R%7C&player_type=batter&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:45Z"
+    },
+    {
+      "year": 2025,
+      "kind": "batting",
+      "hand": "L",
+      "rows": 655,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&pitcher_throws=L&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0",
+      "capturedAt": "2026-10-15T15:11:45Z"
+    },
+    {
+      "year": 2025,
+      "kind": "batting",
+      "hand": "R",
+      "rows": 666,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&pitcher_throws=R",
+      "capturedAt": "2026-10-15T15:12:42Z"
+    },
+    {
+      "year": 2025,
+      "kind": "pitching",
+      "hand": "ALL",
+      "rows": 873,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2025%7C&hfGT=R%7C&player_type=pitcher&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:58Z"
+    },
+    {
+      "year": 2025,
+      "kind": "pitching",
+      "hand": "L",
+      "rows": 869,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=L",
+      "capturedAt": "2026-10-15T15:12:44Z"
+    },
+    {
+      "year": 2025,
+      "kind": "pitching",
+      "hand": "R",
+      "rows": 869,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=R",
+      "capturedAt": "2026-10-15T15:12:43Z"
+    },
+    {
+      "year": 2026,
+      "kind": "batting",
+      "hand": "ALL",
+      "rows": 662,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2026%7C&hfGT=R%7C&player_type=batter&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:56Z"
+    },
+    {
+      "year": 2026,
+      "kind": "batting",
+      "hand": "L",
+      "rows": 651,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&pitcher_throws=L&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0",
+      "capturedAt": "2026-10-15T15:11:45Z"
+    },
+    {
+      "year": 2026,
+      "kind": "batting",
+      "hand": "R",
+      "rows": 657,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=batter&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&pitcher_throws=R",
+      "capturedAt": "2026-10-15T15:12:42Z"
+    },
+    {
+      "year": 2026,
+      "kind": "pitching",
+      "hand": "ALL",
+      "rows": 868,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2026%7C&hfGT=R%7C&player_type=pitcher&pitcher_throws=&batter_stands=&group_by=name&min_pitches=0&min_results=0&min_pas=0&sort_col=xwoba&sort_order=desc&outputFormat=json",
+      "capturedAt": "2026-10-15T15:12:58Z"
+    },
+    {
+      "year": 2026,
+      "kind": "pitching",
+      "hand": "L",
+      "rows": 864,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=L",
+      "capturedAt": "2026-10-15T15:12:44Z"
+    },
+    {
+      "year": 2026,
+      "kind": "pitching",
+      "hand": "R",
+      "rows": 868,
+      "url": "https://baseballsavant.mlb.com/statcast_search?hfSea=2021%7C2022%7C2023%7C2024%7C2025%7C2026%7C&hfGT=R%7C&player_type=pitcher&group_by=name-year&sort_col=xwoba&sort_order=desc&outputFormat=json&min_pitches=0&min_results=0&min_pas=0&batter_stands=R",
+      "capturedAt": "2026-10-15T15:12:43Z"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "verified": "2026-10-15T16:27:03.234663+00:00",
+  "features": {
+    "customization": "Named leaderboard column views saved per device; batting/pitching/fielding in Leaderboards; 44 metrics per opponent hand selectable in tables, player/team headers, live matchups, and app percentiles.",
+    "percentiles": "Selectable metrics, peer group, sample qualifier including L/R PA or BBE, minimum sample and ranking direction; midpoint ties; minimum five valid peers. Official Savant percentiles remain separate.",
+    "games": "Fixed box-score order; regular-season and postseason append scopes; English inning scorecard; color-coded PBP and live center; filterable pitch log.",
+    "intensity": "Version 6 editorial scale spans 1\u2013100, official WPA rating with clearly labeled score-only fallback; unavailable for unplayed games; game/series filters and sorting.",
+    "postseason": "Bracket and series list, league/round/minimum-intensity filters, champion banner, game detail and best-of series summaries.",
+    "ui": "Dark Scorebook style with colored section headers, result chips, metric families, live count/base panels, retained dark color themes.",
+    "removed": "Split lab and obsolete formula leaderboard removed from navigation; old links redirect to Leaderboards. Simulator remains removed."
+  },
+  "sources": {
+    "seasons": "2021\u20132026, regular-season split aggregates",
+    "playerStatcast": {
+      "tables": 36,
+      "records": 28509
+    },
+    "teamStatcast": {
+      "tables": 36,
+      "records": 1080,
+      "LplusR_count_comparisons": 4680,
+      "mismatches": 0
+    },
+    "savantPlayer": "Safely parsed public player summary, section catalog, explicitly year-scoped published tables and datasets. Live fetch plus verified fallback for Judge, Cole and Realmuto; service failures stay explicit."
+  },
+  "examples": {
+    "Judge2024vsL": {
+      "pa": 184,
+      "xwoba": 0.48,
+      "xba": 0.284,
+      "ev": 97
+    },
+    "Cole2024vsR": {
+      "pa": 162,
+      "xwoba": 0.311
+    },
+    "Cubs2024vsL": {
+      "pa": 1494,
+      "xwoba": 0.31,
+      "ev": 87.5
+    },
+    "SavantJudge2024": {
+      "batSpeed": 77,
+      "sprintSpeed": 26.8,
+      "oaa": -6
+    },
+    "SavantRealmuto2024": {
+      "popTime": 1.85,
+      "blocksAboveAverage": -2
+    },
+    "WS2024G1": {
+      "plays": 83,
+      "pitches": 307,
+      "intensity": 89
+    }
+  },
+  "checks": {
+    "unitAndRegression": 46,
+    "liveIntegrationScripts": 3,
+    "typescript": "passed; build rechecks source compilation"
+  },
+  "limits": [
+    "Interactive browser QA unavailable: no control-browser skill in this environment.",
+    "Some official interactive Savant visuals lack accessible season-scoped records; app states unavailable and links the official section. No other season is substituted.",
+    "Live data and private deployed endpoints are checked after publication; snapshot coverage is shown in the app.",
+    "Saved layouts are local to the browser/device."
+  ]
+}

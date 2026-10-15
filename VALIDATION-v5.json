@@ -1,0 +1,53 @@
+{
+  "verified": "2026-10-15T15:22:00.290971+00:00",
+  "ui": "Earlier compact research-desk header, navigation and table layout restored; useful dark palettes retained; result/metric-family colors added.",
+  "removed": "Simulator UI, engine, exclusive APIs and simulation tests/fixture.",
+  "statcast": {
+    "source": "Official Savant aggregate JSON, with no type parameter",
+    "tables": 36,
+    "records": 28509,
+    "seasons": "2021\u20132026",
+    "perspectives": [
+      "batting",
+      "pitching"
+    ],
+    "hands": [
+      "ALL",
+      "L",
+      "R"
+    ],
+    "leaderboards": "Matching expected/contact fields merged by player and actual opponent hand. Official MLB PA and wOBA remain separate from Statcast PA and wOBA.",
+    "playerViews": "Immediate verified overall/L/R comparison, raw pitch calculation kept separately, live refresh falls back to the verified snapshot.",
+    "verifiedExamples": {
+      "Judge2024L": {
+        "pa": 184,
+        "xwoba": 0.48,
+        "xba": 0.284,
+        "ev": 97.0
+      },
+      "Judge2024R": {
+        "pa": 520,
+        "xwoba": 0.479
+      },
+      "Cole2024R": {
+        "pa": 162,
+        "xwoba": 0.311
+      },
+      "Judge2026L": {
+        "pa": 81,
+        "xwoba": 0.413
+      }
+    }
+  },
+  "intensity": {
+    "method": "Smooth WPA-based editorial rating; competitive plate-appearance share. No ratings for unplayed games; estimates labeled. Schedule and series game cards request the same WP rating as game detail.",
+    "verified": "2024 WS G1: 83 plays, total swing480.7points, largest swing71.8points, rating78."
+  },
+  "checks": {
+    "unitAndRegression": 35,
+    "liveIntegrationScripts": 3,
+    "realDataRegression": "leaders-L now asserts real .480xwOBA/.284xBA rather than obsolete null expectation",
+    "typescript": "passed"
+  },
+  "browserQA": "Unavailable: no control-browser skill; no interactive browser QA."
+}
