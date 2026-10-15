@@ -15,7 +15,7 @@ export default {
   const trusted=identityRequest(request,user);
   // Every request, including client assets, passes Access verification first.
   if(url.pathname.startsWith('/api/')||!['GET','HEAD'].includes(request.method))return handler.fetch(trusted,env,ctx);
-  const asset=await env.ASSETS.fetch(trusted.clone());if(asset.status!==404)return asset;
+  const asset=await env.ASSETS.fetch(trusted.url,{method:trusted.method,headers:trusted.headers});if(asset.status!==404)return asset;
   const response=await handler.fetch(trusted,env,ctx);
   return response;
  }
