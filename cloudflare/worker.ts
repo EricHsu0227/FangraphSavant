@@ -1,5 +1,5 @@
 import handler from 'vinext/server/fetch-handler';
-import {accessConfig,verifyAccess,identityRequest} from './access.mjs';
+import {accessConfig,verifyAccess,identityRequest,safeReturnPath} from './access.mjs';
 interface PrivateEnv extends Cloudflare.Env {ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUDIENCE:string;OWNER_EMAIL:string}
 export default {
  async fetch(request:Request,env:PrivateEnv,ctx:ExecutionContext){
@@ -10,11 +10,12 @@ export default {
   const url=new URL(request.url);
   if(url.pathname==='/signout-with-chatgpt')return Response.redirect(url.origin+'/cdn-cgi/access/logout',302);
   if(url.pathname==='/signin-with-chatgpt'){
-   const target=url.searchParams.get('return_to')??'/';return Response.redirect(new URL(target.startsWith('/')&&!target.startsWith('//')?target:'/',url.origin).href,302);
+   return Response.redirect(new URL(safeReturnPath(url.searchParams.get('return_to'),url.origin),url.origin).href,302);
   }
   const trusted=identityRequest(request,user);
   // Every request, including client assets, passes Access verification first.
-  const asset=await env.ASSETS.fetch(trusted);if(asset.status!==404)return asset;
+  if(url.pathname.startsWith('/api/')||!['GET','HEAD'].includes(request.method))return handler.fetch(trusted,env,ctx);
+  const asset=await env.ASSETS.fetch(trusted.clone());if(asset.status!==404)return asset;
   const response=await handler.fetch(trusted,env,ctx);
   return response;
  }

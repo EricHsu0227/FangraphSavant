@@ -1,4 +1,5 @@
 const certificates=new Map();
+export function safeReturnPath(value,origin){try{if(typeof value!=='string'||!value.startsWith('/')||value.startsWith('//'))return '/';const url=new URL(value,origin);return url.origin===origin?url.pathname+url.search+url.hash:'/';}catch{return '/';}}
 export function accessConfig(env){
  const team=String(env.ACCESS_TEAM_DOMAIN??'').replace(/^https:\/\//,'').replace(/\/$/,'');
  if(!/^[a-z0-9-]+\.cloudflareaccess\.com$/.test(team)||!env.ACCESS_AUDIENCE||!env.OWNER_EMAIL)return null;
