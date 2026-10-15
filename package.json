@@ -13,7 +13,9 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "test": "node --test tests/statcast-calculations.mjs tests/calendar-game-v3.mjs tests/research-v4.mjs tests/customization-v6.mjs tests/customization-v7.mjs tests/account-and-gameday-v8.mjs tests/cloudflare-access.mjs",
-    "build:cloudflare": "vite build --config vite.cloudflare.config.ts && node scripts/prepare-cloudflare.mjs"
+    "build:cloudflare": "vite build --config vite.cloudflare.config.ts && node scripts/prepare-cloudflare.mjs",
+    "deploy:cloudflare": "wrangler deploy",
+    "check:cloudflare-deploy": "wrangler deploy --dry-run --outdir .wrangler/deploy-check"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

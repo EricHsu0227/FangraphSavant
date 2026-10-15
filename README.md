@@ -20,7 +20,13 @@ The default `pnpm build` retains the managed Sites deployment and ChatGPT authen
 
 ## Private Cloudflare deployment
 
-Deployment to the owner's Cloudflare account requires account configuration. Nothing automatically publishes on a GitHub push. The manual **Deploy private Cloudflare Worker** action is the supported deploy path.
+The repository includes a root `wrangler.jsonc`, so the existing Workers Builds command `npx wrangler deploy` uses the Vinext build and compiled `dist/server/index.js`. It does not run framework auto-configuration or OpenNext. The custom build runs `pnpm run build:cloudflare`; the worker uploads its compiled ESM modules and protected client assets.
+
+For Workers Builds, the dashboard can explicitly use build command `pnpm run build:cloudflare` and deploy command `npx wrangler deploy --config dist/server/wrangler.json`. This avoids reliance on custom-build handling in the build service. Set Node24, repository root `/`, and production branch `main`. Git-connected Workers Builds may deploy on a push; the separate GitHub deploy workflow remains manual.
+
+Set **runtime** variables `ACCESS_TEAM_DOMAIN`, `ACCESS_AUDIENCE`, and `OWNER_EMAIL` in the Worker's Settings → Variables and Secrets. These values are retained across deployments (`keep_vars: true`); an empty build environment never overwrites them. Until Access is configured, the worker stays locked with503. Configure Access for the complete hostname and restrict it to the owner. Build variables and runtime variables are separate in Cloudflare.
+
+The `DB` binding uses the named `fangraphsavant-preferences` D1 database. Wrangler can provision a missing resource rather than sending a fake all-zero database ID. Apply the committed migrations before using account preference storage. Existing database data must be retained. The manual **Deploy private Cloudflare Worker** GitHub action applies migrations and deploys with explicitly supplied account/database settings.
 
 1. Create a Cloudflare Zero Trust Access self-hosted application covering the entire intended hostname. Use an allow policy restricted to your own email. Protect the Workers hostname as well as any custom domain. Copy the application audience and your `TEAM.cloudflareaccess.com` domain. Do not add a public bypass policy.
 2. Create the D1 database `fangraphsavant-preferences` in your Cloudflare account. Copy its ID.
