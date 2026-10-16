@@ -1,0 +1,10 @@
+{
+  "game": 775300,
+  "plays": 83,
+  "scoringPlays": 5,
+  "allPlaysSelectable": true,
+  "source": "MLB complete live-feed endpoint",
+  "tests": 76,
+  "browserQA": "Unavailable",
+  "checkedAt": "2026-10-16T06:10:47.695Z"
+}

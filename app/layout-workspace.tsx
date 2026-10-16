@@ -15,7 +15,7 @@ export function LayoutWorkspace({page,children}:{page:string,children:React.Reac
     const title=el.dataset.layoutTitle??el.querySelector('h1,h2,h3')?.textContent??(el.classList.contains('tabs')?'Section tabs':el.classList.contains('hero-stats')?'At a glance':el.classList.contains('profile-header')?'Player header':el.classList.contains('game-heading')?'Game scoreboard':el.classList.contains('game-tabs')?'Game navigation':el.classList.contains('game-quick-nav')?'Find a play':el.classList.contains('schedule-layout')?'Calendar & schedule':el.classList.contains('overview-grid')?'Overview comparisons':el.classList.contains('back')?'Back navigation':el.getAttribute('aria-label')??el.className.split(' ')[0]??'Section');
     const base=String(title).replace(/\d+/g,'#').slice(0,140),n=count.get(base)??0;count.set(base,n+1);
     const key=base+':'+n;el.dataset.layoutBlock=key;
-    return {key,title:String(title).slice(0,90),structural:el.matches('.tabs,.page-title,.profile-header,.game-heading,.game-tabs,.game-quick-nav,.back,.game-display-controls')};
+    return {key,title:String(title).slice(0,90),structural:el.matches('.section-navigation,.team-switcher,.tabs,.page-title,.profile-header,.game-heading,.game-tabs,.game-quick-nav,.back,.game-display-controls')};
    });
    const order=arrangeBlocks(next.map(b=>b.key),config);
    next.forEach((block,index)=>{const el=elements[index];el.style.order=String(order.indexOf(block.key));el.style.display=config.hidden.includes(block.key)?'none':'';el.style.gridColumn=config.columns===1||block.structural||config.wide.includes(block.key)?'1 / -1':'auto';});
