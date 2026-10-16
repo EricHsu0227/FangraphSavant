@@ -1,4 +1,4 @@
-name: Deploy private Cloudflare Worker
+name: Deploy Cloudflare Worker
 on:
   workflow_dispatch:
 permissions:
@@ -14,15 +14,12 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_D1_DATABASE_ID: ${{ vars.CLOUDFLARE_D1_DATABASE_ID }}
-      ACCESS_TEAM_DOMAIN: ${{ vars.ACCESS_TEAM_DOMAIN }}
-      ACCESS_AUDIENCE: ${{ vars.ACCESS_AUDIENCE }}
-      OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Require private deployment configuration
+      - name: Require deployment configuration
         run: node scripts/check-cloudflare-config.mjs
       - run: corepack enable
       - run: pnpm install --frozen-lockfile

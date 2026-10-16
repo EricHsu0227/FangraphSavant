@@ -4,13 +4,13 @@ import {preferenceBackup} from '../lib/preferences.mjs';
 export const RESTORED='fs:preferences-restored';
 export function setPreference(key:string,value:string){if(localStorage.getItem(key)===value)return;localStorage.setItem(key,value);window.dispatchEvent(new CustomEvent('fs:preference-change',{detail:{key,value}}));}
 export function removePreference(key:string){if(localStorage.getItem(key)===null)return;localStorage.removeItem(key);window.dispatchEvent(new CustomEvent('fs:preference-change',{detail:{key,value:null}}));}
-type State={status:string,user?:{displayName:string,email:string,provider?:string},updatedAt?:string,error?:string};
+type State={status:string,localOnly?:boolean,user?:{displayName:string,email:string,provider?:string},updatedAt?:string,error?:string};
 export function useAccountPreferences(){
  const [state,setState]=useState<State>({status:'loading'}),retry=useRef<()=>void>(()=>{});
  useEffect(()=>{
-  let alive=true,ready=false,busy=false,revision=0,owner:string|null=null,updatedAt:string|undefined,timer:ReturnType<typeof setTimeout>|undefined;
+  let alive=true,ready=false,busy=false,localOnly=false,revision=0,owner:string|null=null,updatedAt:string|undefined,timer:ReturnType<typeof setTimeout>|undefined;
   const pending=new Map<string,string|null>();let user:State['user'];let savedQueue:any=null;try{savedQueue=JSON.parse(localStorage.getItem('fs:sync-pending')??'null')}catch{};
-  const status=(value:string,error?:string)=>{if(alive)setState({status:value,user,updatedAt,error});};
+  const status=(value:string,error?:string)=>{if(alive)setState({status:value,user,updatedAt,error,localOnly});};
   const persist=()=>{try{localStorage.setItem('fs:sync-pending',JSON.stringify({owner:owner??savedQueue?.owner??null,changes:Object.fromEntries(pending)}));}catch{}};
   const queue=()=>{clearTimeout(timer);timer=setTimeout(()=>void flush(),700);};
   const restore=(values:Record<string,string>,replace:boolean)=>{
@@ -23,7 +23,7 @@ export function useAccountPreferences(){
    if(busy||!alive)return;busy=true;
    try{
     const response=await fetch('/api/preferences',{cache:'no-store',credentials:'same-origin'}),data:any=await response.json();
-    if(response.status===401){ready=false;status('signed-out');return;}
+    if(response.status===401){ready=false;localOnly=data.syncAvailable===false;status(localOnly?'local':'signed-out');return;}
     if(!response.ok)throw Error(data.error??'Could not load account preferences.');
     user=data.user;owner=user!.email;revision=data.revision;updatedAt=data.updatedAt;
     if(!ready){
@@ -38,7 +38,7 @@ export function useAccountPreferences(){
    try{
     const response=await fetch('/api/preferences',{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision,changes})}),data:any=await response.json();
     if(response.status===409){conflict=true;return;}
-    if(response.status===401){ready=false;status('signed-out');return;}
+    if(response.status===401){ready=false;localOnly=data.syncAvailable===false;status(localOnly?'local':'signed-out');return;}
     if(!response.ok)throw Error(data.error??'Could not save account preferences.');
     revision=data.revision;updatedAt=data.updatedAt;
     for(const [key,value]of Object.entries(changes))if(pending.get(key)===value)pending.delete(key);
@@ -55,4 +55,4 @@ export function useAccountPreferences(){
  return {...state,retry:()=>retry.current()};
 }
 export type AccountState=ReturnType<typeof useAccountPreferences>;
-export function AccountPanel({account}:{account:AccountState}){const path=typeof location==='undefined'?'/':location.pathname+location.search;return <section className="account-panel"><div><span className="eyebrow">ACCOUNT & SAVED PREFERENCES</span><h2>{account.user?.displayName??'Keep your research desk with you'}</h2><p>{account.user?'Columns, L/R pairs, percentiles, themes, backgrounds and saved boards sync to this account.':'Sign in to restore your preferences across devices. Local changes stay available while offline.'}</p></div><div className={'account-status '+account.status}><i/>{({loading:'Checking account…',saved:'Saved to account',saving:'Saving changes…',offline:'Saved locally · sync pending','signed-out':'Sign in to sync',local:'Saved locally'} as Record<string,string>)[account.status]??account.status}</div>{account.error&&<p role="status" className="note">{account.error}</p>}<div className="inline-controls">{account.user?<><button onClick={account.retry}>Sync now</button><a href={'/signout-with-chatgpt?return_to='+encodeURIComponent(path)} target="_top">Sign out</a></>:<a className="account-signin" href={'/signin-with-chatgpt?return_to='+encodeURIComponent(path)} target="_top">Sign in to your account</a>}{account.updatedAt&&<span className="subtle">Last saved {new Date(account.updatedAt).toLocaleString()}</span>}</div></section>}
+export function AccountPanel({account}:{account:AccountState}){const path=typeof location==='undefined'?'/':location.pathname+location.search;if(account.localOnly)return <section className="account-panel"><div><span className="eyebrow">SAVED PREFERENCES</span><h2>Your research desk, in this browser</h2><p>Columns, L/R pairs, percentiles, themes, backgrounds and saved boards are saved automatically on this device. Use Export and Restore below to transfer your setup to another browser.</p></div><div className="account-status local"><i/>Saved locally</div></section>;return <section className="account-panel"><div><span className="eyebrow">ACCOUNT & SAVED PREFERENCES</span><h2>{account.user?.displayName??'Keep your research desk with you'}</h2><p>{account.user?'Columns, L/R pairs, percentiles, themes, backgrounds and saved boards sync to this account.':'Sign in to restore your preferences across devices. Local changes stay available while offline.'}</p></div><div className={'account-status '+account.status}><i/>{({loading:'Checking account…',saved:'Saved to account',saving:'Saving changes…',offline:'Saved locally · sync pending','signed-out':'Sign in to sync',local:'Saved locally'} as Record<string,string>)[account.status]??account.status}</div>{account.error&&<p role="status" className="note">{account.error}</p>}<div className="inline-controls">{account.user?<><button onClick={account.retry}>Sync now</button><a href={'/signout-with-chatgpt?return_to='+encodeURIComponent(path)} target="_top">Sign out</a></>:<a className="account-signin" href={'/signin-with-chatgpt?return_to='+encodeURIComponent(path)} target="_top">Sign in to your account</a>}{account.updatedAt&&<span className="subtle">Last saved {new Date(account.updatedAt).toLocaleString()}</span>}</div></section>}

@@ -27,6 +27,7 @@ export async function verifyAccess(token,config,fetcher=fetch){
 export function identityRequest(request,user){
  const headers=new Headers(request.headers);
  for(const key of [...headers.keys()])if(key.startsWith('oai-authenticated-')||key==='fangraphsavant-auth-provider')headers.delete(key);
+ if(!user)return new Request(request,{headers});
  headers.set('oai-authenticated-user-id',user.userId);headers.set('oai-authenticated-user-email',user.email);headers.set('fangraphsavant-auth-provider','cloudflare-access');
  if(user.fullName){headers.set('oai-authenticated-user-full-name',encodeURIComponent(user.fullName));headers.set('oai-authenticated-user-full-name-encoding','percent-encoded-utf-8');}
  return new Request(request,{headers});

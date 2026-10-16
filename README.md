@@ -1,6 +1,6 @@
 # FangraphSavant
 
-Private MLB research desk covering 2015–2026. Built with React, Vinext/Vite, Cloudflare Workers and D1. The current owner-only app is https://fangraphsavant.blondsky6.chatgpt.site.
+MLB research desk covering 2015–2026. Built with React, Vinext/Vite, Cloudflare Workers and D1. The current owner-only app is https://fangraphsavant.blondsky6.chatgpt.site.
 
 Includes batting, pitching and fielding leaderboards with saved column layouts; official Statcast left/right aggregates; player and team research; historical rosters and platoons; schedule, scorebooks and play-by-play; MLB win probability; pitcher/batter career matchups; and a configurable independent pitching wOBA-WAR model. Game contact details include Savant xBA and official home-run ballpark counts when available. No intensity scores or simulator.
 
@@ -16,27 +16,21 @@ pnpm exec tsc --noEmit --incremental false
 pnpm dev
 ```
 
-The default `pnpm build` retains the managed Sites deployment and ChatGPT authentication. `pnpm build:cloudflare` creates the standalone Cloudflare Worker in `dist/server` and client assets in `dist/client`. Both builds use the same app and statistics adapters. The Cloudflare build has a separate verified Access boundary and does not depend on Sites dispatch for identity.
+The default `pnpm build` retains the managed Sites deployment and ChatGPT authentication. `pnpm build:cloudflare` creates the standalone Cloudflare Worker in `dist/server` and client assets in `dist/client`. Both builds use the same app and statistics adapters. The Cloudflare build is publicly accessible and does not depend on Zero Trust. The managed Sites deployment retains its original private audience.
 
-## Private Cloudflare deployment
+## Public Cloudflare deployment
 
-The repository includes a root `wrangler.jsonc`, so the existing Workers Builds command `npx wrangler deploy` uses the Vinext build and compiled `dist/server/index.js`. It does not run framework auto-configuration or OpenNext. The custom build runs `pnpm run build:cloudflare`; the worker uploads its compiled ESM modules and protected client assets.
+The repository includes a root `wrangler.jsonc`, so the existing Workers Builds command `npx wrangler deploy` uses the Vinext build and compiled `dist/server/index.js`. It does not run framework auto-configuration or OpenNext. The custom build runs `pnpm run build:cloudflare`; the worker uploads its compiled ESM modules and client assets.
 
 For Workers Builds, the dashboard can explicitly use build command `pnpm run build:cloudflare` and deploy command `npx wrangler deploy --config dist/server/wrangler.json`. This avoids reliance on custom-build handling in the build service. Set Node24, repository root `/`, and production branch `main`. Git-connected Workers Builds may deploy on a push; the separate GitHub deploy workflow remains manual.
 
-Set **runtime** variables `ACCESS_TEAM_DOMAIN`, `ACCESS_AUDIENCE`, and `OWNER_EMAIL` in the Worker's Settings → Variables and Secrets. These values are retained across deployments (`keep_vars: true`); an empty build environment never overwrites them. Until Access is configured, the worker stays locked with503. Configure Access for the complete hostname and restrict it to the owner. Build variables and runtime variables are separate in Cloudflare.
+No Cloudflare Access variables or Zero Trust setup are required. Public pages, assets and baseball APIs are accessible to every visitor. Incoming account identity headers are stripped. The account preference API refuses anonymous reads/writes before touching D1, and public visitors save customizations in their own browser. Export/Restore transfers preferences between devices; account cloud sync is not available on this public deployment. Existing D1 account data is retained and is never exposed as shared public preferences.
 
-The `DB` binding uses the named `fangraphsavant-preferences` D1 database. Wrangler can provision a missing resource rather than sending a fake all-zero database ID. Apply the committed migrations before using account preference storage. Existing database data must be retained. The manual **Deploy private Cloudflare Worker** GitHub action applies migrations and deploys with explicitly supplied account/database settings.
+**If Cloudflare Access was previously enabled in the dashboard, disable it for this Worker hostname** (Workers & Pages → fangraphsavant → Settings → Domains & Routes, or the Domains tab). Dashboard Access intercepts requests before the Worker; a code deployment cannot remove that login screen. Also remove any separate Access application protecting a custom hostname if present.
 
-1. Create a Cloudflare Zero Trust Access self-hosted application covering the entire intended hostname. Use an allow policy restricted to your own email. Protect the Workers hostname as well as any custom domain. Copy the application audience and your `TEAM.cloudflareaccess.com` domain. Do not add a public bypass policy.
-2. Create the D1 database `fangraphsavant-preferences` in your Cloudflare account. Copy its ID.
-3. In this private GitHub repo, create an environment named `cloudflare-private`. Add environment **secrets** `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and `OWNER_EMAIL`. The API token needs Workers Scripts Edit and D1 Edit for the selected account. Add environment **variables** `CLOUDFLARE_D1_DATABASE_ID`, `ACCESS_TEAM_DOMAIN`, and `ACCESS_AUDIENCE`.
-4. Run **Deploy private Cloudflare Worker** from Actions. It validates configuration, runs tests and TypeScript, builds, applies D1 migrations, and deploys `fangraphsavant`. Configure the matching Access protection before using its hostname.
-5. Verify an anonymous request is challenged/denied and that only the owner's Access session opens the app. The worker independently verifies the RS256 signature, issuer, audience, expiry and owner email on **every request**, including static assets. Missing Access configuration returns503; missing or invalid identity returns403. Preview URLs are disabled. No statistics or preferences are served anonymously.
+The `DB` binding retains the existing named `fangraphsavant-preferences` database. For manual GitHub deployment, the existing `cloudflare-private` environment name is retained: configure `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets, plus the `CLOUDFLARE_D1_DATABASE_ID` variable. Run **Deploy Cloudflare Worker**. Git-connected Workers Builds deploy directly on main pushes without Access variables.
 
-Settings, layouts, percentile choices, split pairs and backgrounds sync to a D1 profile keyed by authenticated user ID. Optimistic revisions prevent concurrent overwrite; a browser copy supports offline use. Unsaved changes retry after reconnection. No service token or credentials are included in source. Sites and Cloudflare use separate identities/databases: export preferences in Settings and restore them on the new host for the initial transfer.
-
-Cloudflare resources, quotas and billing belong to the account owner. No account-side deployment or resource creation has been claimed without access to that account.
+Verify anonymous navigation and statistics APIs succeed, account preferences return401, and forged identity headers cannot read or write any existing account. Preview URLs remain disabled. Repository visibility is unchanged; publishing the app does not make its source repository public.
 
 ## Data behavior
 
@@ -48,4 +42,4 @@ Core2015–2026 datasets and verified fallback snapshots are included, with live
 
 `pnpm test` covers statistics, scope separation, paired splits, roster history, game normalization, official park counts, pitch coordinates/colors, career matchups, account isolation, revision conflicts, large background round-trips and Cloudflare Access verification. Real-data scripts under `tests/` check live MLB/Savant adapters. `VALIDATION-v8.json` records the current verification limits. No interactive browser QA was available in the build environment.
 
-Independent fan project. Data © MLB Advanced Media and respective sources; no affiliation with MLB, FanGraphs or Baseball-Reference. Keep this repository and deployments private.
+Independent fan project. Data © MLB Advanced Media and respective sources; no affiliation with MLB, FanGraphs or Baseball-Reference. The source repository remains private. The standalone Cloudflare deployment is public by owner request.
