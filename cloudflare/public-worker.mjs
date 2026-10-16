@@ -20,7 +20,10 @@ export function publicWorker(handler){return {
    if((profile||leaders)&&Number.isInteger(year)&&year>=2015&&year<=2026){
     const path=profile?`/data/profiles/${id}-${kind}.json`:`/data/leaders/${year}-${kind}.json`;
     const asset=await env.ASSETS.fetch(new URL(path,url.origin).href,{method:'GET'});
-    if(asset.ok){const data=await asset.json();return Response.json({...data,year},{headers:{'Cache-Control':'public, max-age=300','X-Content-Type-Options':'nosniff'}});}
+    if(asset.ok){
+     if(leaders){const headers=new Headers(asset.headers);headers.set('Cache-Control','public, max-age=300');headers.set('Content-Type','application/json');headers.set('X-Content-Type-Options','nosniff');return new Response(asset.body,{headers});}
+     const data=await asset.json();return Response.json({...data,year},{headers:{'Cache-Control':'public, max-age=300','X-Content-Type-Options':'nosniff'}});
+    }
    }
   }
   if(url.pathname.startsWith('/api/')||!['GET','HEAD'].includes(request.method))return handler.fetch(trusted,env,ctx);
