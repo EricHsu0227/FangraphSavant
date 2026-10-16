@@ -12,8 +12,8 @@
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "test": "node --test tests/statcast-calculations.mjs tests/calendar-game-v3.mjs tests/research-v4.mjs tests/customization-v6.mjs tests/customization-v7.mjs tests/account-and-gameday-v8.mjs tests/cloudflare-access.mjs tests/cloudflare-public.mjs",
-    "build:cloudflare": "vite build --config vite.cloudflare.config.ts && node scripts/prepare-cloudflare.mjs",
+    "test": "node --test tests/statcast-calculations.mjs tests/calendar-game-v3.mjs tests/research-v4.mjs tests/customization-v6.mjs tests/customization-v7.mjs tests/account-and-gameday-v8.mjs tests/cloudflare-access.mjs tests/cloudflare-public.mjs tests/game-workspace-v9.mjs",
+    "build:cloudflare": "node scripts/prepare-player-profiles.mjs && vite build --config vite.cloudflare.config.ts && node scripts/prepare-cloudflare.mjs",
     "deploy:cloudflare": "wrangler deploy",
     "check:cloudflare-deploy": "wrangler deploy --dry-run --outdir .wrangler/deploy-check"
   },

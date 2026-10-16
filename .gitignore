@@ -60,3 +60,7 @@ lib/data/raw.json
 
 # Compiler cache; never needed to reproduce source.
 tsconfig.tsbuildinfo
+
+# Rebuilt from the committed verified season records
+/public/data/profiles/
+/public/data/leaders/

@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-16",
+  "scope": "Standalone public Cloudflare deployment",
+  "tests": {
+    "passed": 73,
+    "failed": 0
+  },
+  "typecheck": "passed",
+  "productionBuild": "passed",
+  "wranglerDryRun": "passed",
+  "realDataChecks": [
+    {
+      "player": 669160,
+      "name": "Dustin May",
+      "year": 2026,
+      "kind": "pitching",
+      "seasonWoba": 0.31704,
+      "profileSeasons": 7,
+      "requiredLiveRequests": 0
+    },
+    {
+      "player": 592450,
+      "name": "Aaron Judge",
+      "year": 2024,
+      "kind": "batting",
+      "seasonWoba": 0.475755,
+      "requiredLiveRequests": 0
+    },
+    {
+      "player": 547180,
+      "name": "Bryce Harper",
+      "year": 2015,
+      "kind": "batting",
+      "seasonWoba": 0.461183,
+      "requiredLiveRequests": 0
+    },
+    {
+      "game": 775300,
+      "year": 2024,
+      "officialLiveFeedFetched": true,
+      "plays": 83,
+      "measuredPitchLocationsWithinPlot": 307
+    }
+  ],
+  "verificationLimits": [
+    "No interactive mobile browser QA was available.",
+    "Worker runtime CPU/memory failure was suspected from profile processing; exact production error logs were unavailable.",
+    "The complete Cloudflare hostname was not supplied, so direct public URL checks were unavailable.",
+    "MLB/Savant live data availability and feed latency still depend on upstream services."
+  ],
+  "dataHandling": "Core profiles and overall leaderboards use existing verified snapshots; optional live details load independently. Missing expected values and locations are not invented."
+}

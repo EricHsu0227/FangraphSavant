@@ -11,6 +11,18 @@ export function publicWorker(handler){return {
    if(['/signin-with-chatgpt','/signout-with-chatgpt','/callback'].includes(new URL(path,url.origin).pathname))path='/?page=Settings';
    return Response.redirect(new URL(path,url.origin).href,302);
   }
+  // Profiles and overall leaders use prebuilt verified records; optional live
+  // metadata remains independent, so an upstream outage cannot blank the page.
+  if(url.pathname==='/api/research'&&request.method==='GET'){
+   const q=url.searchParams,view=q.get('view'),year=Number(q.get('year')??2026),id=Number(q.get('id')),kind=q.get('kind')==='pitching'?'pitching':'batting';
+   const profile=view==='profile'&&Number.isInteger(id)&&id>0&&id<=99999999;
+   const leaders=view==='leaders'&&(!q.get('hand')||q.get('hand')==='all')&&q.get('refreshStatcast')!=='1';
+   if((profile||leaders)&&Number.isInteger(year)&&year>=2015&&year<=2026){
+    const path=profile?`/data/profiles/${id}-${kind}.json`:`/data/leaders/${year}-${kind}.json`;
+    const asset=await env.ASSETS.fetch(new URL(path,url.origin).href,{method:'GET'});
+    if(asset.ok){const data=await asset.json();return Response.json({...data,year},{headers:{'Cache-Control':'public, max-age=300','X-Content-Type-Options':'nosniff'}});}
+   }
+  }
   if(url.pathname.startsWith('/api/')||!['GET','HEAD'].includes(request.method))return handler.fetch(trusted,env,ctx);
   const asset=await env.ASSETS.fetch(trusted.url,{method:trusted.method,headers:trusted.headers});
   if(asset.status!==404)return asset;

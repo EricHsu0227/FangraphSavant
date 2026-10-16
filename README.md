@@ -38,6 +38,14 @@ MLB official Stats API supplies schedules, full game feeds, standard/advanced st
 
 Core2015–2026 datasets and verified fallback snapshots are included, with live sources requested where available. 2026 snapshots may be partial. Career matchup records are current career totals, not historical as-of totals; regular season and postseason are separate. wOBA uses seasonal coefficients; custom wOBA-WAR is explicitly independent of FanGraphs WAR and bWAR. Source outages preserve usable cached/local sections and show unavailable fields as dashes. Live MLB requests are uncached and updates stay in place; browser scheduling, network conditions and upstream latency still apply.
 
+## Game desk and page layouts
+
+Game navigation stays above the content, with a direct plate-appearance picker, player/result search, inning shortcuts and ten plays per page. The live workspace separates At bat, Matchup, Lineups, Pitching, Contact, Recent plays and Career matchup. Win probability has its own game tab. Pitch locations retain measured catcher-view coordinates and expand the plot window for outside pitches; missing coordinates are never invented.
+
+Every page has a **Customize layout** control for saved section order, visibility, desktop columns, section width, page width and spacing. Layouts are per page and included in preference exports. Graphite, Forest, Burgundy, Plum, Coffee, Olive, Teal and Charcoal backgrounds can also tint panels and navigation.
+
+The Cloudflare build generates static player history and overall leaderboards from the existing verified season records. This avoids repeatedly decompressing twelve full seasons in a player request, while optional live biography, splits and arsenal calls load independently. Generated assets are rebuilt from committed inputs rather than checked into Git. These are labeled snapshots, not a claim of live MLB season totals. Manual Savant refresh still uses the live adapter.
+
 ## Validation
 
 `pnpm test` covers statistics, scope separation, paired splits, roster history, game normalization, official park counts, pitch coordinates/colors, career matchups, account isolation, revision conflicts, large background round-trips and Cloudflare Access verification. Real-data scripts under `tests/` check live MLB/Savant adapters. `VALIDATION-v8.json` records the current verification limits. No interactive browser QA was available in the build environment.
