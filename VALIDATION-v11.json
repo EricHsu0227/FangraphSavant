@@ -1,0 +1,11 @@
+{
+  "tests": 79,
+  "replayFrames": 490,
+  "pitches": 307,
+  "plateAppearances": 83,
+  "source": "MLB complete game feed",
+  "noDateInReplayPayload": true,
+  "scoresMatchSource": true,
+  "browserQA": "Unavailable",
+  "checkedAt": "2026-10-16T06:42:47.049Z"
+}
