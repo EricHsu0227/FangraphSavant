@@ -1,0 +1,121 @@
+name: Build data
+
+# Nightly: rebuilds the current season (Statcast refresh of the last 3 days).
+# Each data commit triggers a Cloudflare redeploy of the site.
+# Manual: Actions → Build data → Run workflow, seasons "2015-2026" for the full backfill.
+on:
+  schedule:
+    - cron: "17 11 * * *"   # 11:17 UTC daily (early morning US Eastern, after the night's games)
+  workflow_dispatch:
+    inputs:
+      seasons:
+        description: 'Seasons to rebuild: "2026", "2015-2026" or "2019,2021"'
+        default: "2015-2026"
+      prospects:
+        description: "Refresh FanGraphs prospect lists"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      seasons: ${{ steps.p.outputs.seasons }}
+      current: ${{ steps.p.outputs.current }}
+    steps:
+      - id: p
+        run: |
+          Y=$(date -u +%Y); M=$(date -u +%m)
+          CUR=$Y; if [ "$M" -lt 3 ]; then CUR=$((Y-1)); fi
+          IN="${{ github.event.inputs.seasons }}"
+          [ -z "$IN" ] && IN="$CUR"
+          python3 - "$IN" > seasons.json <<'EOF'
+          import json, sys
+          out = []
+          for part in sys.argv[1].split(","):
+              part = part.strip()
+              if "-" in part:
+                  a, b = map(int, part.split("-")); out += list(range(a, b + 1))
+              elif part:
+                  out.append(int(part))
+          print(json.dumps(sorted(set(s for s in out if 2015 <= s <= 2026))))
+          EOF
+          echo "seasons=$(cat seasons.json)" >> "$GITHUB_OUTPUT"
+          echo "current=$CUR" >> "$GITHUB_OUTPUT"
+
+  season:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 3        # be gentle with Baseball Savant
+      matrix:
+        season: ${{ fromJson(needs.plan.outputs.seasons) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+      - run: pip install -r pipeline/requirements.txt
+      - name: Restore Statcast cache
+        uses: actions/cache@v4
+        with:
+          path: pipeline/cache/statcast_${{ matrix.season }}.parquet
+          key: statcast-${{ matrix.season }}-${{ github.run_id }}
+          restore-keys: statcast-${{ matrix.season }}-
+      - name: Build season
+        env:
+          SEASON: ${{ matrix.season }}
+          REFRESH_DAYS: ${{ matrix.season == fromJson(needs.plan.outputs.current) && '3' || '0' }}
+        run: python pipeline/build_season.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: season-${{ matrix.season }}
+          path: |
+            public/data/${{ matrix.season }}
+            pipeline/work/${{ matrix.season }}
+          retention-days: 3
+
+  publish:
+    needs: season
+    if: always() && needs.season.result != 'cancelled'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r pipeline/requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: season-*
+          path: _artifacts
+      - name: Put season outputs in place
+        run: |
+          for d in _artifacts/season-*; do
+            [ -d "$d/public" ] && cp -r "$d/public/." public/
+            [ -d "$d/pipeline" ] && cp -r "$d/pipeline/." pipeline/
+          done
+          rm -rf _artifacts
+      - name: Build global files
+        env:
+          PROSPECTS: ${{ (github.event_name == 'schedule' || github.event.inputs.prospects == 'true') && '1' || '' }}
+        run: python pipeline/build_global.py
+      - name: Commit data
+        run: |
+          git config user.name "platoon-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/data pipeline/work
+          if git diff --cached --quiet; then echo "no data changes"; else
+            git commit -m "data: $(date -u +%Y-%m-%d) update" && git push
+          fi
