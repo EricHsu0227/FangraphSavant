@@ -37,7 +37,7 @@ export function parseQuery(q) {
   return out;
 }
 
-export default function SearchBox() {
+export default function SearchBox({ autoFocus = false }) {
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
   const [players, setPlayers] = useState([]);
@@ -81,7 +81,7 @@ export default function SearchBox() {
   let lastGrp = null;
   return (
     <div className="search-box" ref={box}>
-      <input placeholder="Search players, teams, 2016 Cubs, 2024 ALCS…" value={q}
+      <input placeholder="Search players, teams, 2016 Cubs, 2024 ALCS…" value={q} autoFocus={autoFocus} aria-label="Search"
         onFocus={() => setOpen(true)}
         onChange={(e) => { setQ(e.target.value); setOpen(true); setSel(0); }}
         onKeyDown={(e) => {

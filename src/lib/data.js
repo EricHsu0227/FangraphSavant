@@ -76,6 +76,37 @@ export async function loadSeason(season, group) {
         if (r.WAR_fg != null) all.fWAR = r.WAR_fg;
       }
     }
+    // pitch-type columns (pt_SL_use, ...) on the 'all' split
+    for (const r of rows) {
+      const a = r.splits?.all;
+      if (!a || !r.pt) continue;
+      for (const [pt, v] of Object.entries(r.pt)) for (const [k, x] of Object.entries(v || {})) if (x != null) a[`pt_${pt}_${k}`] = x;
+    }
+    // league line per split, then + stats relative to it
+    rows.league = {};
+    for (const sp of SPLITS) {
+      const tot = {};
+      for (const r of rows) {
+        const l = r.splits?.[sp];
+        if (!l) continue;
+        for (const k of ['PA', 'AB', 'H', '1B', '2B', '3B', 'HR', 'BB', 'IBB', 'HBP', 'SO', 'SF', 'IP', 'ER', 'TBF']) tot[k] = (tot[k] || 0) + (l[k] || 0);
+        const w = l.PA || l.TBF || 0;
+        for (const k of ['xwOBA', 'xwOBAcon', 'wOBAcon']) if (l[k] != null) { tot[`_${k}`] = (tot[`_${k}`] || 0) + l[k] * w; tot[`_${k}w`] = (tot[`_${k}w`] || 0) + w; }
+      }
+      for (const k of ['xwOBA', 'xwOBAcon', 'wOBAcon']) if (tot[`_${k}w`]) tot[k] = tot[`_${k}`] / tot[`_${k}w`];
+      rows.league[sp] = group === 'hitting' ? deriveHitting(tot, season) : derivePitching(tot, season);
+    }
+    for (const r of rows) for (const sp of SPLITS) {
+      const l = r.splits?.[sp], lg = rows.league[sp];
+      if (!l || !lg) continue;
+      const rel = (a, b, inv) => (a == null || !b ? null : Math.round((inv ? b / a : a / b) * 100));
+      if (group === 'hitting') {
+        for (const k of ['AVG', 'OBP', 'SLG', 'ISO', 'BABIP', 'K%', 'BB%', 'wOBA', 'xwOBA']) l[`${k}+`] = rel(l[k], lg[k]);
+      } else {
+        l['ERA-'] = rel(l.ERA, lg.ERA); l['FIP-'] = rel(l.FIP, lg.FIP);
+        l['K%+'] = rel(l['K%'], lg['K%']); l['BB%+'] = rel(l['BB%'], lg['BB%']); l['xwOBA+'] = rel(l.xwOBA, lg.xwOBA);
+      }
+    }
     rows.source = source;
     return rows;
   })();
@@ -103,6 +134,10 @@ async function fromMlbApi(season, group) {
 }
 
 export async function loadTeamsMeta(season) { return loadJSON(`${season}/teams.json`); }
+export async function loadLineups(season) { return loadJSON(`${season}/lineups.json`); }
+export async function loadTeamStats(season) { return loadJSON(`${season}/team_stats.json`); }
+export async function loadArsenal(season) { return loadJSON(`${season}/arsenal.json`); }
+export async function loadPlayerFile(id) { return loadJSON(`players/${id}.json`); }
 export async function loadPostseasonStatcast(season) { return loadJSON(`${season}/postseason.json`); }
 export async function loadProspects(year) { return loadJSON(`prospects/${year}.json`); }
 export async function loadContracts() { return loadJSON('contracts.json'); }

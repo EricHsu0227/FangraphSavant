@@ -13,6 +13,36 @@ export const fmt = {
 
 const S = (key, label, f, cat, hb = true, desc = '') => ({ key, label, f, cat, hb, desc });
 
+// Pitch types in Statcast codes, with FanGraphs-style short labels
+export const PITCH_TYPES = [['FF', 'FA'], ['SI', 'SI'], ['FC', 'FC'], ['SL', 'SL'], ['ST', 'SW'], ['CU', 'CU'], ['KC', 'KC'], ['CH', 'CH'], ['FS', 'FS']];
+export const PITCH_NAME = { FF: '4-Seam', SI: 'Sinker', FC: 'Cutter', SL: 'Slider', ST: 'Sweeper', SV: 'Slurve', CU: 'Curveball', KC: 'Knuckle Curve',
+  CS: 'Slow Curve', CH: 'Changeup', FS: 'Splitter', FO: 'Forkball', SC: 'Screwball', KN: 'Knuckleball', EP: 'Eephus', FA: 'Fastball' };
+export const PITCH_COLOR = { FF: '#d22d49', SI: '#fe9d00', FC: '#933f2c', SL: '#eee716', ST: '#ddb33a', SV: '#93afd4', CU: '#00d1ed',
+  KC: '#6236cd', CS: '#0068ff', CH: '#1dbe3a', FS: '#3bacac', FO: '#55ccab', SC: '#60db33', KN: '#3c44cd', EP: '#888888', FA: '#d22d49' };
+
+/** Flat pitch-type columns, e.g. pt_SL_use, built from row.pt in data.js */
+function pitchTypeStats(group) {
+  const out = [];
+  for (const [pt, short] of PITCH_TYPES) {
+    if (group === 'pitching') {
+      out.push(S(`pt_${pt}_use`, `${short}%`, fmt.pct, 'Pitch Type', null, `${PITCH_NAME[pt]} usage`));
+      out.push(S(`pt_${pt}_velo`, `v${short}`, fmt.r1, 'Velocity', true, `${PITCH_NAME[pt]} velocity`));
+      out.push(S(`pt_${pt}_hb`, `${short}-X`, fmt.r1, 'Movement', null, `${PITCH_NAME[pt]} horizontal break (in)`));
+      out.push(S(`pt_${pt}_ivb`, `${short}-Z`, fmt.r1, 'Movement', null, `${PITCH_NAME[pt]} induced vertical break (in)`));
+      out.push(S(`pt_${pt}_spin`, `${short} Spin`, fmt.int, 'Spin', true, `${PITCH_NAME[pt]} spin rate`));
+      out.push(S(`pt_${pt}_rv100`, `w${short}/C`, fmt.r2, 'Pitch Value', true, `${PITCH_NAME[pt]} run value per 100`));
+      out.push(S(`pt_${pt}_whiff`, `${short} Whiff%`, fmt.pct, 'Pitch Value', true));
+      out.push(S(`pt_${pt}_xwoba`, `${short} xwOBA`, fmt.r3, 'Pitch Value', false));
+    } else {
+      out.push(S(`pt_${pt}_use`, `${short}% seen`, fmt.pct, 'Pitch Type', null, `Share of pitches seen that were ${PITCH_NAME[pt]}`));
+      out.push(S(`pt_${pt}_rv100`, `w${short}/C`, fmt.r2, 'Pitch Value', true, `Run value per 100 vs ${PITCH_NAME[pt]}`));
+      out.push(S(`pt_${pt}_whiff`, `${short} Whiff%`, fmt.pct, 'Pitch Value', false));
+      out.push(S(`pt_${pt}_xwoba`, `${short} xwOBA`, fmt.r3, 'Pitch Value', true));
+    }
+  }
+  return out;
+}
+
 export const HITTING = [
   S('G', 'G', fmt.int, 'Standard'), S('PA', 'PA', fmt.int, 'Standard'), S('AB', 'AB', fmt.int, 'Standard'),
   S('H', 'H', fmt.int, 'Standard'), S('2B', '2B', fmt.int, 'Standard'), S('3B', '3B', fmt.int, 'Standard'),
@@ -52,6 +82,30 @@ export const HITTING = [
   S('Swing%', 'Swing%', fmt.pct, 'Plate Discipline', null), S('ZContact%', 'Z-Contact%', fmt.pct, 'Plate Discipline'),
   S('Contact%', 'Contact%', fmt.pct, 'Plate Discipline'), S('FPS%', 'F-Strike%', fmt.pct, 'Plate Discipline', false),
   S('sprint', 'Sprint Speed', fmt.r1, 'Statcast'), S('RV', 'Run Value', fmt.r1, 'Statcast'),
+  S('BBE', 'BBE', fmt.int, 'Statcast', null), S('pitches', 'Pitches', fmt.int, 'Statcast', null),
+  // Win probability / context
+  S('WPA', 'WPA', fmt.r2, 'Win Probability', true, 'Win probability added'),
+  S('RE24', 'RE24', fmt.r1, 'Win Probability', true, 'Run expectancy added (Statcast run value)'),
+  // + stats (100 = league average for that season and split)
+  S('AVG+', 'AVG+', fmt.plus, '+ Stats'), S('OBP+', 'OBP+', fmt.plus, '+ Stats'), S('SLG+', 'SLG+', fmt.plus, '+ Stats'),
+  S('ISO+', 'ISO+', fmt.plus, '+ Stats'), S('BABIP+', 'BABIP+', fmt.plus, '+ Stats'), S('K%+', 'K%+', fmt.plus, '+ Stats', false),
+  S('BB%+', 'BB%+', fmt.plus, '+ Stats'), S('wOBA+', 'wOBA+', fmt.plus, '+ Stats'), S('xwOBA+', 'xwOBA+', fmt.plus, '+ Stats'),
+  // quality of contact (Savant)
+  S('Weak%', 'Weak%', fmt.pct, 'Quality of Contact', false), S('Topped%', 'Topped%', fmt.pct, 'Quality of Contact', false),
+  S('Under%', 'Under%', fmt.pct, 'Quality of Contact', false), S('Flare%', 'Flare/Burner%', fmt.pct, 'Quality of Contact'),
+  S('Solid%', 'Solid%', fmt.pct, 'Quality of Contact'), S('xwOBAcon', 'xwOBAcon', fmt.r3, 'Quality of Contact'),
+  S('wOBAcon', 'wOBAcon', fmt.r3, 'Quality of Contact'), S('Pull Air%', 'Pull Air%', fmt.pct, 'Batted Ball'),
+  // attack zones
+  S('heart%', 'Heart%', fmt.pct, 'Attack Zones', null), S('shadow%', 'Shadow%', fmt.pct, 'Attack Zones', null),
+  S('chase%', 'Chase-zone%', fmt.pct, 'Attack Zones', null), S('waste%', 'Waste%', fmt.pct, 'Attack Zones', null),
+  S('heartSw%', 'Heart Swing%', fmt.pct, 'Attack Zones'), S('shadowSw%', 'Shadow Swing%', fmt.pct, 'Attack Zones', null),
+  S('chaseSw%', 'Chase-zone Swing%', fmt.pct, 'Attack Zones', false), S('wasteSw%', 'Waste Swing%', fmt.pct, 'Attack Zones', false),
+  S('heartRV', 'Heart RV', fmt.r1, 'Attack Zones'), S('shadowRV', 'Shadow RV', fmt.r1, 'Attack Zones'),
+  S('chaseRV', 'Chase RV', fmt.r1, 'Attack Zones'), S('wasteRV', 'Waste RV', fmt.r1, 'Attack Zones'),
+  S('Swing RV', 'Swing RV', fmt.r1, 'Attack Zones'), S('Take RV', 'Take RV', fmt.r1, 'Attack Zones'),
+  S('FPSwing%', '1st-Pitch Swing%', fmt.pct, 'Plate Discipline', null),
+  S('age', 'Age', fmt.int, 'Standard', null),
+  ...pitchTypeStats('hitting'),
 ];
 
 export const PITCHING = [
@@ -81,6 +135,22 @@ export const PITCHING = [
   S('FPS%', 'F-Strike%', fmt.pct, 'Plate Discipline'),
   S('FBvelo', 'FB Velo', fmt.r1, 'Pitch'), S('FBspin', 'FB Spin', fmt.int, 'Pitch'), S('Ext', 'Extension', fmt.r1, 'Pitch'),
   S('IVB', 'FB IVB', fmt.r1, 'Pitch'), S('RV', 'Run Value', fmt.r1, 'Statcast'),
+  S('BBE', 'BBE', fmt.int, 'Statcast', null), S('pitches', 'Pitches', fmt.int, 'Statcast', null),
+  S('xwOBAcon', 'xwOBAcon', fmt.r3, 'Statcast', false), S('wOBAcon', 'wOBAcon', fmt.r3, 'Statcast', false), S('xISO', 'xISO', fmt.r3, 'Statcast', false), S('maxEV', 'Max EV', fmt.r1, 'Statcast', false), S('EV90', 'EV90', fmt.r1, 'Statcast', false), S('SweetSpot%', 'Sweet-Spot%', fmt.pct, 'Statcast', false), S('Swing%', 'Swing%', fmt.pct, 'Plate Discipline', null), S('ZSwing%', 'Z-Swing%', fmt.pct, 'Plate Discipline', null), S('Contact%', 'Contact%', fmt.pct, 'Plate Discipline', false), S('ZContact%', 'Z-Contact%', fmt.pct, 'Plate Discipline', false), S('FPSwing%', '1st-Pitch Swing%', fmt.pct, 'Plate Discipline', null), S('Pull%', 'Pull%', fmt.pct, 'Batted Ball', null), S('Straight%', 'Straight%', fmt.pct, 'Batted Ball', null), S('Oppo%', 'Oppo%', fmt.pct, 'Batted Ball', null), S('PU%', 'PU%', fmt.pct, 'Batted Ball', null), S('Pull Air%', 'Pull Air%', fmt.pct, 'Batted Ball', false),
+  S('WPA', 'WPA', fmt.r2, 'Win Probability', true, 'Win probability added (pitcher side)'),
+  S('RE24', 'RE24', fmt.r1, 'Win Probability', true, 'Runs saved vs expectancy'),
+  S('ERA-', 'ERA-', fmt.plus, '+ Stats', false), S('FIP-', 'FIP-', fmt.plus, '+ Stats', false),
+  S('K%+', 'K%+', fmt.plus, '+ Stats'), S('BB%+', 'BB%+', fmt.plus, '+ Stats', false), S('xwOBA+', 'xwOBA+ allowed', fmt.plus, '+ Stats', false),
+  S('Weak%', 'Weak%', fmt.pct, 'Quality of Contact'), S('Topped%', 'Topped%', fmt.pct, 'Quality of Contact'),
+  S('Under%', 'Under%', fmt.pct, 'Quality of Contact'), S('Flare%', 'Flare/Burner%', fmt.pct, 'Quality of Contact', false),
+  S('Solid%', 'Solid%', fmt.pct, 'Quality of Contact', false), S('xwOBAcon', 'xwOBAcon', fmt.r3, 'Quality of Contact', false),
+  S('heart%', 'Heart%', fmt.pct, 'Attack Zones', false), S('shadow%', 'Shadow%', fmt.pct, 'Attack Zones'),
+  S('chase%', 'Chase-zone%', fmt.pct, 'Attack Zones', null), S('waste%', 'Waste%', fmt.pct, 'Attack Zones', false),
+  S('chaseSw%', 'Chase-zone Swing%', fmt.pct, 'Attack Zones'), S('heartRV', 'Heart RV', fmt.r1, 'Attack Zones'),
+  S('shadowRV', 'Shadow RV', fmt.r1, 'Attack Zones'), S('chaseRV', 'Chase RV', fmt.r1, 'Attack Zones'),
+  S('Swing RV', 'Swing RV', fmt.r1, 'Attack Zones'), S('Take RV', 'Take RV', fmt.r1, 'Attack Zones'),
+  S('age', 'Age', fmt.int, 'Standard', null),
+  ...pitchTypeStats('pitching'),
 ];
 
 export const catalog = (group) => (group === 'pitching' ? PITCHING : HITTING);
@@ -95,6 +165,13 @@ export const PRESETS = {
     'Batted Ball': ['PA', 'GB%', 'LD%', 'FB%', 'PU%', 'Pull%', 'Straight%', 'Oppo%', 'EV', 'LA'],
     'Plate Discipline': ['PA', 'Swing%', 'Zone%', 'ZSwing%', 'Chase%', 'Contact%', 'ZContact%', 'Whiff%', 'FPS%', 'K%', 'BB%'],
     'Value/Expected': ['PA', 'wOBA', 'xwOBA', 'valuePlus', 'expectedPlus', 'bsr', 'frv', 'vRAA', 'eRAA', 'vWAR', 'eWAR', 'fWAR'],
+    '+ Stats': ['PA', 'AVG+', 'OBP+', 'SLG+', 'ISO+', 'BABIP+', 'K%+', 'BB%+', 'wOBA+', 'xwOBA+', 'wRCplus'],
+    'Win Probability': ['PA', 'WPA', 'RE24', 'wOBA', 'wRCplus'],
+    'Quality of Contact': ['PA', 'BBE', 'Weak%', 'Topped%', 'Under%', 'Flare%', 'Solid%', 'Barrel%', 'xwOBAcon', 'wOBAcon'],
+    'Attack Zones': ['PA', 'heart%', 'shadow%', 'chase%', 'waste%', 'heartSw%', 'chaseSw%', 'heartRV', 'shadowRV', 'chaseRV', 'wasteRV', 'Swing RV', 'Take RV'],
+    'Bat Tracking': ['PA', 'BatSpeed', 'Squared%', 'Blast%', 'EV', 'EV90', 'Barrel%', 'xwOBAcon'],
+    'Pitch Value': ['PA', ...PITCH_TYPES.map(([p]) => `pt_${p}_rv100`)],
+    'Pitch Type': ['PA', ...PITCH_TYPES.map(([p]) => `pt_${p}_use`)],
   },
   pitching: {
     Dashboard: ['W', 'L', 'G', 'GS', 'IP', 'K%', 'BB%', 'ERA', 'FIP', 'wOBA', 'xwOBA', 'wRCplusAllowed', 'WAR_FIP', 'WAR_wOBA', 'vWAR', 'eWAR'],
@@ -103,6 +180,14 @@ export const PRESETS = {
     Statcast: ['IP', 'EV', 'LA', 'Barrel%', 'HardHit%', 'xBA', 'xSLG', 'xwOBA', 'xERA', 'FBvelo', 'FBspin', 'IVB', 'Ext'],
     'Plate Discipline': ['IP', 'Zone%', 'Chase%', 'Whiff%', 'CSW%', 'FPS%', 'K%', 'BB%'],
     'WAR': ['IP', 'FIP', 'WAR_FIP', 'wOBA', 'WAR_wOBA', 'xwOBA', 'valuePlus', 'expectedPlus', 'vWAR', 'eWAR', 'fWAR'],
+    '+ Stats': ['IP', 'ERA-', 'FIP-', 'K%+', 'BB%+', 'xwOBA+', 'wRCplusAllowed'],
+    'Win Probability': ['IP', 'WPA', 'RE24', 'ERA', 'wOBA'],
+    'Quality of Contact': ['IP', 'Weak%', 'Topped%', 'Under%', 'Flare%', 'Solid%', 'Barrel%', 'xwOBAcon'],
+    'Attack Zones': ['IP', 'heart%', 'shadow%', 'chase%', 'waste%', 'chaseSw%', 'heartRV', 'shadowRV', 'chaseRV', 'Swing RV', 'Take RV'],
+    'Pitch Type': ['IP', ...PITCH_TYPES.map(([p]) => `pt_${p}_use`)],
+    'Velocity': ['IP', ...PITCH_TYPES.map(([p]) => `pt_${p}_velo`)],
+    'Movement': ['IP', ...PITCH_TYPES.flatMap(([p]) => [`pt_${p}_hb`, `pt_${p}_ivb`])],
+    'Pitch Value': ['IP', ...PITCH_TYPES.map(([p]) => `pt_${p}_rv100`)],
   },
 };
 

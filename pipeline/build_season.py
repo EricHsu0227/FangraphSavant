@@ -16,8 +16,13 @@ import numpy as np
 from common import OUT, WORK, ABBR, LAST_SEASON, clean_num, env_season, log, write_json
 import sources as src
 import statcast as sc
+import detail as dt
+from common import ROOT
 
-SC_RATE_KEYS = ["xwOBA", "xBA", "xSLG", "xISO", "EV", "maxEV", "EV90", "LA", "Barrel%", "HardHit%", "SweetSpot%",
+SC_RATE_KEYS = ["WPA", "RE24", "Pull Air%", "Weak%", "Topped%", "Under%", "Flare%", "Solid%", "xwOBAcon", "wOBAcon",
+                "heart%", "shadow%", "chase%", "waste%", "heartSw%", "shadowSw%", "chaseSw%", "wasteSw%",
+                "heartRV", "shadowRV", "chaseRV", "wasteRV", "Edge%", "Meatball%", "MeatballSw%", "Swing RV", "Take RV", "FPSwing%",
+                "xwOBA", "xBA", "xSLG", "xISO", "EV", "maxEV", "EV90", "LA", "Barrel%", "HardHit%", "SweetSpot%",
                 "GB%", "LD%", "FB%", "PU%", "Pull%", "Straight%", "Oppo%", "Swing%", "Whiff%", "Zone%", "ZSwing%", "Chase%",
                 "Contact%", "ZContact%", "FPS%", "CSW%", "BatSpeed", "Squared%", "Blast%", "RV", "BBE", "pitches",
                 "FBvelo", "FBspin", "IVB", "Ext"]
@@ -98,6 +103,38 @@ def build(season: int):
     write_json(WORK / str(season) / "xwoba_grid.json", sc.xwoba_grid(pa))
     write_json(OUT / str(season) / "postseason.json", sc.postseason_by_series(df, pa))
 
+    # ---------------- per-player Statcast detail (staged; merged into players/<id>.json by build_global)
+    det, summ = dt.player_detail(df, pa)
+    write_json(ROOT / "pipeline" / "staging" / str(season) / "detail.json",
+               {"batter": {str(k): v for k, v in det["batter"].items()}, "pitcher": {str(k): v for k, v in det["pitcher"].items()}})
+    ars = []
+    for pid, d in det["pitcher"].items():
+        for split in ("all", "vL", "vR"):
+            for r in (d.get("arsenal") or {}).get(split, []):
+                if r["n"] >= 25:
+                    ars.append({"id": pid, "split": split, **r})
+    log(f"detail {season}: {len(det['batter'])} hitters, {len(det['pitcher'])} pitchers, {len(ars)} arsenal rows")
+
+    # team and league Statcast lines (all / vL / vR), for team leaderboards and team pages
+    team_stats = {}
+    for role, col in (("batter", "bat_team_id"), ("pitcher", "fld_team_id")):
+        for split, hand in (("all", None), ("vL", "L"), ("vR", "R")):
+            oh = "p_throws" if role == "batter" else "stand"
+            rp = pa[pa["game_type"] == "R"]
+            rx = df[df["game_type"] == "R"]
+            if hand:
+                rp, rx = rp[rp[oh] == hand], rx[rx[oh] == hand]
+            t = sc._agg(rp, rx, [col], role)
+            for rec in t.to_dict("records"):
+                if rec.get(col) != rec.get(col):
+                    continue
+                team_stats.setdefault(str(int(rec[col])), {}).setdefault(role, {})[split] = clean_num(
+                    {k: v for k, v in rec.items() if k != col})
+            lg = sc._agg(rp.assign(_lg=1), rx.assign(_lg=1), ["_lg"], role)
+            team_stats.setdefault("league", {}).setdefault(role, {})[split] = clean_num(
+                {k: v for k, v in lg.to_dict("records")[0].items() if k != "_lg"})
+    write_json(OUT / str(season) / "team_stats.json", team_stats)
+
     # ---------------- Savant / FanGraphs extras
     ex = src.savant_extras(season)
     war_bat = src.fangraphs_war(season, "bat")
@@ -106,6 +143,10 @@ def build(season: int):
     # ---------------- lineups / positions / DH
     starts = src.boxscore_starts(season)
     poscnt = src.position_counts(starts)
+    names = {r["id"]: r["name"] for r in starts["starts"]}
+    names.update({str(k): v for k, v in starts.get("sp_names", {}).items()})
+    write_json(OUT / str(season) / "lineups.json", {"names": {str(k): v for k, v in names.items()},
+                                                   "teams": src.batting_orders(starts)})
 
     for group, role, fname in [("hitting", "batter", "batters"), ("pitching", "pitcher", "pitchers")]:
         mlb = {s: collapse(src.mlb_player_stats(season, group, sit), group) for s, sit in (("all", None), ("vL", "vl"), ("vR", "vr"))}
@@ -123,6 +164,20 @@ def build(season: int):
                    "teamId": (base or {}).get("teamId"), "bats": person.get("batSide", {}).get("code"),
                    "throws": person.get("pitchHand", {}).get("code"), "splits": {}}
             row["team"] = ABBR.get(row["teamId"], "")
+            if person.get("birthDate"):
+                by, bm, bd = map(int, person["birthDate"].split("-"))
+                row["age"] = season - by - (1 if (bm, bd) > (6, 30) else 0)   # baseball age (as of June 30)
+            if person.get("mlbDebutDate", "")[:4] == str(season):
+                row["rookie"] = 1
+            row["pt"] = summ[role].get(pid, {}).get("all")
+            grp = det[role].get(pid, {}).get("groups")
+            if grp:
+                row["ptg"] = grp
+            if role == "batter":
+                # games by position, for team pages and the position filter
+                pcnt = poscnt.get(pid)
+                if pcnt:
+                    row["gpos"] = dict(pcnt.most_common())
             for s in ("all", "vL", "vR"):
                 line = dict((mlb[s].get(pid) or {}).get("line") or {})
                 scr = scm[s].get(pid)
@@ -139,6 +194,7 @@ def build(season: int):
                     row["splits"][s] = clean_num(line)
             if not row["splits"].get("all"):
                 continue
+            row = {k: v for k, v in row.items() if v is not None}
             # per-team stints for traded players (Statcast rates; team pages pull exact counting from the MLB API)
             teams_played = sorted({t for (p, t) in stint_sc["all"] if p == pid})
             if len(teams_played) > 1:
@@ -169,6 +225,11 @@ def build(season: int):
         else:
             pitchers = rows
         write_json(OUT / str(season) / f"{fname}.json", rows)
+        if group == "pitching":
+            nm = {r["id"]: (r["name"], r.get("teamId"), r.get("throws")) for r in rows}
+            for a in ars:
+                a["name"], a["teamId"], a["throws"] = nm.get(a["id"], ("", None, None))
+            write_json(OUT / str(season) / "arsenal.json", ars)
         log(f"{fname} {season}: {len(rows)} rows")
 
     # ---------------- depth charts / lineups

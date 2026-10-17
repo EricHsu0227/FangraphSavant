@@ -41,3 +41,28 @@ assert.equal(ipToDec('123.1').toFixed(3), '123.333');
 const d = deriveHitting(line, S);
 assert.ok(d.OPS > 0.9 && d['K%'] > 0.19);
 console.log('stats tests passed', { w: w.toFixed(3), vWAR: ve.vWAR.toFixed(1), eWAR: ve.eWAR.toFixed(1), FIPWAR: wf.toFixed(1), wOBAWAR: ww.toFixed(1) });
+
+// ---- platoon models
+import { regressSplits, projectMatchup, leagueComps, marcel, optimizeLineup } from '../src/lib/platoon.js';
+{
+  // LHB with a huge observed split in a small sample gets pulled toward the league split
+  const r = regressSplits({ vL: { PA: 120, wOBA: 0.250, xwOBA: 0.260 }, vR: { PA: 480, wOBA: 0.380, xwOBA: 0.370 } }, 'batter', 'L');
+  const m = r.metrics.wOBA;
+  close(m.obs, 0.130, 1e-9, 'observed split');
+  assert.ok(m.reg < 0.06 && m.reg > 0.028, `regressed split shrinks (${m.reg})`);
+  const back = (m.vL * 120 + m.vR * 480) / 600;
+  close(back, m.overall, 1e-9, 'regressed splits keep the overall wOBA');
+  const lg = leagueComps({ PA: 180000, SO: 40500, BB: 15300, IBB: 500, HBP: 2000, HR: 5600, xwOBAcon: 0.37 });
+  const avg = { PA: 600, SO: 135, BB: 51, IBB: 2, HBP: 7, HR: 19, xwOBAcon: 0.37 };
+  const pr = projectMatchup(avg, avg, lg, 2024);
+  close(pr.woba, 0.31, 0.03, 'avg vs avg ~ league wOBA');
+  const star = { PA: 600, SO: 90, BB: 90, IBB: 5, HBP: 5, HR: 40, xwOBAcon: 0.45 };
+  assert.ok(projectMatchup(star, avg, lg, 2024).woba > pr.woba + 0.05, 'star batter projects higher');
+  const ace = { PA: 700, SO: 230, BB: 40, IBB: 1, HBP: 4, HR: 15, xwOBAcon: 0.33 };
+  assert.ok(projectMatchup(avg, ace, lg, 2024).woba < pr.woba - 0.03, 'ace suppresses');
+  const mc = marcel([{ season: 2025, splits: { all: { PA: 600, wOBA: 0.400 } } }, { season: 2024, splits: { all: { PA: 600, wOBA: 0.380 } } }], 'wOBA', 'all', { 2025: 0.315, 2024: 0.31 }, 27);
+  assert.ok(mc.value > 0.35 && mc.value < 0.39, `marcel regresses (${mc.value})`);
+  const lu = optimizeLineup(Array.from({ length: 10 }, (_, i) => ({ id: i, w: 0.3 + i / 100, obp: 0.3 + (i % 3) / 100 })), 'w');
+  assert.equal(lu.length, 9); assert.equal(lu[2].w, 0.36, 'fourth-best bat bats 3rd');
+  console.log('platoon tests passed', { regSplit: m.reg.toFixed(3), avgMatchup: pr.woba.toFixed(3), marcel: mc.value.toFixed(3) });
+}

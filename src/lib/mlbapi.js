@@ -51,6 +51,18 @@ export const getPersonSplits = (id, season, group) =>
 export const getGameLog = (id, season, group) =>
   api(`/api/v1/people/${id}/stats?stats=gameLog&group=${group}&season=${season}`);
 
+export const getMinors = (id, group) =>
+  api(`/api/v1/people/${id}/stats?stats=yearByYear&group=${group}&sportIds=11,12,13,14,15,16`, { ttl: 6 * 3600_000 });
+export const getAwards = (id) => api(`/api/v1/people/${id}/awards`, { ttl: 24 * 3600_000 });
+export const getSituationCodes = () => api('/api/v1/situationCodes', { ttl: 7 * 24 * 3600_000 });
+export const getPersonSit = (id, season, group, codes) =>
+  api(`/api/v1/people/${id}/stats?stats=statSplits&group=${group}&season=${season}&sitCodes=${codes.join(',')}`);
+export const getVsPlayer = (batterId, pitcherId) =>
+  api(`/api/v1/people/${batterId}/stats?stats=vsPlayer&opposingPlayerId=${pitcherId}&group=hitting`, { ttl: 3600_000 });
+export const getCoaches = (teamId, season) => api(`/api/v1/teams/${teamId}/coaches?season=${season}`, { ttl: 24 * 3600_000 });
+export const getTeamTransactions = (teamId, start, end) =>
+  api(`/api/v1/transactions?teamId=${teamId}&startDate=${start}&endDate=${end}`, { ttl: 3600_000 });
+export const getVenue = (id) => api(`/api/v1/venues/${id}?hydrate=fieldInfo,location`, { ttl: 7 * 24 * 3600_000 });
 export const getTransactions = (id) => api(`/api/v1/transactions?playerId=${id}`, { ttl: 3600_000 });
 
 export const searchPeople = (q) => api(`/api/v1/people/search?names=${encodeURIComponent(q)}&sportIds=1&active=false&hydrate=currentTeam`, { ttl: 3600_000 });

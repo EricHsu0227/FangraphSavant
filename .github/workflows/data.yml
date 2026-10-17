@@ -84,6 +84,7 @@ jobs:
           path: |
             public/data/${{ matrix.season }}
             pipeline/work/${{ matrix.season }}
+            pipeline/staging/${{ matrix.season }}
           retention-days: 3
 
   publish:

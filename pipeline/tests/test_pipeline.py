@@ -85,6 +85,10 @@ for day in range(60):
                             "release_spin_rate": rng.normal(2300, 200), "release_extension": rng.normal(6.4, .3), "pfx_z": rng.normal(1.2, .3),
                             "plate_x": rng.normal(0, .8), "plate_z": rng.normal(2.5, .8), "bat_speed": rng.normal(71, 4), "swing_length": 7.2,
                             "post_bat_score": score[half], "bat_score": score[half], "player_name": "x",
+                            "pfx_x": rng.normal(-0.5, .5), "sz_top": 3.4, "sz_bot": 1.6,
+                            "delta_home_win_exp": (RV[ev] if last else 0) * (0.1 if half == "Bot" else -0.1),
+                            "n_thruorder_pitcher": 1 + (inning - 1) // 3, "arm_angle": rng.normal(40, 8),
+                            "release_pos_x": -1.8, "release_pos_z": 5.9,
                         })
         pk += 1
 raw = pd.DataFrame(rows)
@@ -130,8 +134,9 @@ def fake_starts(season):
                 b = batters[t][(slot + (g % 3 == 0)) % 10]
                 st.append({"game": g, "team": tid[t], "slot": slot, "id": b, "name": f"Player {b}",
                            "pos": "DH" if slot == 4 else ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"][slot - 1],
-                           "opp_sp": 1, "opp_hand": "L" if g % 4 == 0 else "R"})
-    return {"starts": st, "gs": Counter({(pitchers[t][k], tid[t]): 16 - k for t in TEAMS for k in range(5)})}
+                           "opp_sp": 1, "opp_hand": "L" if g % 4 == 0 else "R", "date": f"2025-05-{g % 28 + 1:02d}",
+                           "home": g % 2 == 0, "opp": 147, "rs": 4, "ra": 3, "sp": 2})
+    return {"sp_names": {1: "Opp SP"}, "starts": st, "gs": Counter({(pitchers[t][k], tid[t]): 16 - k for t in TEAMS for k in range(5)})}
 
 
 src.boxscore_starts = fake_starts
@@ -166,4 +171,20 @@ assert len(list((common.OUT / "players").glob("*.json"))) == len(all_b) + len(al
 print("guts:", {k: round(v, 3) for k, v in g.items()})
 print("park factors:", parks["2025"])
 print("sample batter:", {k: r0["splits"]["all"][k] for k in ["PA", "xwOBA", "EV", "Barrel%", "Whiff%"]}, "bsrSpeed", r0["bsrSpeed"])
+lin = json.load(open(common.OUT / "2025" / "lineups.json"))
+ts = json.load(open(common.OUT / "2025" / "team_stats.json"))
+ars = json.load(open(common.OUT / "2025" / "arsenal.json"))
+pf = json.load(open(common.OUT / "players" / f"{pit[0]['id']}.json"))
+bf = json.load(open(common.OUT / "players" / f"{bat[0]['id']}.json"))
+assert len(lin["teams"]) == 6 and len(lin["teams"][next(iter(lin["teams"]))][0][8]) == 9
+assert "league" in ts and "vL" in ts["league"]["batter"] and "WPA" in ts[next(k for k in ts if k != "league")]["batter"]["all"]
+assert ars and {"pt", "velo", "ivb", "hb", "whiff", "xwoba", "name"} <= set(ars[0])
+pd_ = pf["detail"]["pitching"]["2025"]
+assert {"arsenal", "zones", "counts", "tto", "rolling", "groups", "monthly"} <= set(pd_), set(pd_)
+bd = bf["detail"]["hitting"]["2025"]
+assert {"vsPitch", "zones", "spray", "rolling", "counts", "groups"} <= set(bd), set(bd)
+assert len(bd["spray"][0]) == 6 and bd["rolling"]
+assert "heart%" in r0["splits"]["all"] and "WPA" in r0["splits"]["all"] and r0.get("pt")
+print("arsenal sample:", ars[0])
+print("counts sample:", bd["counts"]["all"])
 print("OK — pipeline test passed")

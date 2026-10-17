@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 from collections import defaultdict
 
-from common import FIRST_SEASON, LAST_SEASON, OUT, WORK, log, read_json, write_json
+from common import FIRST_SEASON, LAST_SEASON, OUT, ROOT, WORK, log, read_json, write_json
 import sources as src
 
 
@@ -88,10 +88,29 @@ def build_players(seasons: list[int]):
                 if group == "hitting" or not e.get("pos"):
                     e["pos"] = r.get("pos") or e.get("pos")
     pdir = OUT / "players"
+    # Statcast detail staged by this run's season builds (other seasons keep what the file already has)
+    staged = {}
+    for s in seasons:
+        d = read_json(ROOT / "pipeline" / "staging" / str(s) / "detail.json")
+        if d:
+            staged[s] = d
+    log(f"detail staged for seasons: {sorted(staged)}")
     for pid, rec in by.items():
         # pitchers' token hitting lines (PA < 20 in a season) are dropped from their file
         rec["hitting"] = [r for r in rec["hitting"] if r["splits"]["all"].get("PA", 0) >= 20 or not rec["pitching"]]
-        write_json(pdir / f"{pid}.json", {"id": pid, **rec})
+        for group in ("hitting", "pitching"):
+            for r in rec[group]:
+                r.pop("ptg", None)   # lives in detail
+        old = read_json(pdir / f"{pid}.json", {}) or {}
+        detail = old.get("detail", {"hitting": {}, "pitching": {}})
+        for s, d in staged.items():
+            for group, role in (("hitting", "batter"), ("pitching", "pitcher")):
+                v = d.get(role, {}).get(str(pid))
+                if v:
+                    detail.setdefault(group, {})[str(s)] = v
+                else:
+                    detail.setdefault(group, {}).pop(str(s), None)
+        write_json(pdir / f"{pid}.json", {"id": pid, **rec, "detail": detail})
     write_json(OUT / "players.json", sorted(idx.values(), key=lambda x: x["name"]))
     log(f"players: {len(by)} files")
 

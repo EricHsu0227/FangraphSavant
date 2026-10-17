@@ -19,7 +19,11 @@ COLS = [
     "launch_speed", "launch_angle", "launch_speed_angle", "bb_type", "hc_x", "hc_y", "delta_run_exp",
     "pitch_type", "release_speed", "release_spin_rate", "release_extension", "pfx_z", "plate_x", "plate_z",
     "bat_speed", "swing_length", "post_bat_score", "bat_score", "player_name",
+    # v2 columns: movement, zone geometry, win expectancy, times through order, arm angle
+    "pfx_x", "sz_top", "sz_bot", "delta_home_win_exp", "n_thruorder_pitcher", "arm_angle", "release_pos_x", "release_pos_z",
+    "attack_angle", "home_score", "away_score",
 ]
+REQUIRED_V2 = ["pfx_x", "sz_top", "sz_bot", "delta_home_win_exp", "n_thruorder_pitcher"]
 
 URL = "https://baseballsavant.mlb.com/statcast_search/csv"
 
@@ -42,6 +46,9 @@ def download_season(season: int, refresh_days: int = 0) -> pd.DataFrame:
     """Day-by-day download with a parquet cache. refresh_days re-pulls the most recent N days."""
     path = CACHE / f"statcast_{season}.parquet"
     have = pd.read_parquet(path) if path.exists() else pd.DataFrame(columns=COLS)
+    if len(have) and any(c not in have.columns for c in REQUIRED_V2):
+        log(f"statcast {season}: cache predates v2 columns, re-downloading the season")
+        have = pd.DataFrame(columns=COLS)
     start, end = season_dates(season)
     end = min(end, date.today().isoformat())
     days = []
@@ -78,6 +85,12 @@ def _safe_fetch(d):
 
 
 # ---------------------------------------------------------------------------
+PT_GROUP = {"FF": "FB", "FA": "FB", "SI": "FB", "FC": "FB", "SL": "BR", "ST": "BR", "SV": "BR", "CU": "BR", "KC": "BR",
+            "CS": "BR", "SC": "OS", "CH": "OS", "FS": "OS", "FO": "OS", "KN": "OS", "EP": "OS"}
+PT_NAME = {"FF": "4-Seam", "SI": "Sinker", "FC": "Cutter", "SL": "Slider", "ST": "Sweeper", "SV": "Slurve", "CU": "Curveball",
+           "KC": "Knuckle Curve", "CS": "Slow Curve", "CH": "Changeup", "FS": "Splitter", "FO": "Forkball", "SC": "Screwball",
+           "KN": "Knuckleball", "EP": "Eephus", "FA": "Fastball"}
+REGIONS = ["heart", "shadow", "chase", "waste"]
 SWING = {"swinging_strike", "swinging_strike_blocked", "foul", "foul_tip", "hit_into_play", "hit_into_play_no_out",
          "hit_into_play_score", "foul_bunt", "missed_bunt", "bunt_foul_tip"}
 WHIFF = {"swinging_strike", "swinging_strike_blocked", "missed_bunt"}
@@ -92,7 +105,9 @@ def prepare(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     df = df.copy()
     for c in ["launch_speed", "launch_angle", "woba_value", "woba_denom", "estimated_woba_using_speedangle",
               "estimated_ba_using_speedangle", "estimated_slg_using_speedangle", "delta_run_exp", "release_speed",
-              "release_spin_rate", "release_extension", "pfx_z", "bat_speed", "hc_x", "hc_y", "zone", "launch_speed_angle"]:
+              "release_spin_rate", "release_extension", "pfx_z", "bat_speed", "hc_x", "hc_y", "zone", "launch_speed_angle",
+              "pfx_x", "sz_top", "sz_bot", "delta_home_win_exp", "n_thruorder_pitcher", "plate_x", "plate_z", "arm_angle",
+              "attack_angle", "balls", "strikes"]:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
         else:
@@ -107,6 +122,29 @@ def prepare(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     df["is_first"] = (df["balls"] == 0) & (df["strikes"] == 0)
     df["is_strike_call"] = ~df["description"].isin(NOT_STRIKE)
     df["called_strike"] = df["description"].eq("called_strike")
+    # win probability added from the batting side's view
+    sign = np.where(df["inning_topbot"] == "Bot", 1.0, -1.0)
+    df["wpa_bat"] = df["delta_home_win_exp"].fillna(0) * sign
+    # Savant-style attack zones from plate location and the batter's zone (ft)
+    half_w = 0.83
+    top = df["sz_top"].fillna(3.4)
+    bot = df["sz_bot"].fillna(1.6)
+    dx = df["plate_x"].abs() - half_w
+    dz = np.maximum(df["plate_z"] - top, bot - df["plate_z"])
+    d = np.maximum(dx, dz)
+    df["region"] = np.select([d < -0.24, d < 0.24, d < 0.75], ["heart", "shadow", "chase"], "waste")
+    df.loc[df["plate_x"].isna() | df["plate_z"].isna(), "region"] = None
+    # pitch type groups
+    df["ptg"] = df["pitch_type"].map(PT_GROUP)
+    # count states this PA has passed through
+    key = ["game_pk", "at_bat_number"]
+    st = df[["game_pk", "at_bat_number", "balls", "strikes"]]
+    g = st.groupby(key)
+    df["pa_two_strike"] = g["strikes"].transform("max") >= 2
+    df["pa_full"] = (st["balls"].eq(3) & st["strikes"].eq(2)).groupby([df["game_pk"], df["at_bat_number"]]).transform("max")
+    after1 = df[df["pitch_number"] == 2].set_index(key)[["balls", "strikes"]]
+    df = df.join(after1.rename(columns={"balls": "b2", "strikes": "s2"}), on=key)
+    df["pa_first"] = df.groupby(key)["pitch_number"].transform("max") == 1
     pa = df[df["events"].notna() & (df["events"] != "")].copy()
     ev = pa["events"]
     pa["PA"] = 1
@@ -139,6 +177,11 @@ def prepare(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     pa["oppo"] = oppo & has_spray
     pa["straight"] = has_spray & ~pa["pull"] & ~pa["oppo"]
     pa["has_spray"] = has_spray
+    pa["spray"] = spray
+    pa["pull_air"] = pa["pull"] & pa["bb_type"].isin(["fly_ball", "line_drive", "popup"])
+    for i, q in enumerate(["weak", "topped", "under", "flare", "solid", "barrelq"], start=1):
+        pa[f"q_{q}"] = (pa["launch_speed_angle"] == i) & pa["bbe"]
+
     for t in ["ground_ball", "line_drive", "fly_ball", "popup"]:
         pa[t] = (pa["bb_type"] == t) & pa["bbe"]
     return df, pa
@@ -211,6 +254,29 @@ def _agg(pa: pd.DataFrame, px: pd.DataFrame, keys: list[str], role: str) -> pd.D
             nsw = bs.size().replace(0, np.nan)
             s["Squared%"] = cg["squared"].sum() / nsw
             s["Blast%"] = cg["blast"].sum() / nsw
+    sign = 1 if role == "batter" else -1
+    s["WPA"] = sign * g["wpa_bat"].sum()
+    s["RE24"] = sign * rv
+    s["Pull Air%"] = bbe["pull_air"].sum() / n
+    for q, lab in [("weak", "Weak%"), ("topped", "Topped%"), ("under", "Under%"), ("flare", "Flare%"), ("solid", "Solid%")]:
+        s[lab] = bbe[f"q_{q}"].sum() / n
+    s["xwOBAcon"] = bbe["estimated_woba_using_speedangle"].mean()
+    s["wOBAcon"] = bbe["woba_value"].mean()
+    # attack-zone breakdown (Savant Heart/Shadow/Chase/Waste)
+    for r in REGIONS:
+        rx = px[px["region"] == r]
+        rg = rx.groupby(keys, dropna=False)
+        rn = rg.size()
+        s[f"{r}%"] = rn / pitches
+        s[f"{r}Sw%"] = rg["is_swing"].sum() / rn.replace(0, np.nan)
+        s[f"{r}RV"] = sign * rg["delta_run_exp"].sum()
+    s["Edge%"] = s["shadow%"]
+    s["Meatball%"] = s["heart%"]
+    s["MeatballSw%"] = s["heartSw%"]
+    s["Swing RV"] = sign * px[px["is_swing"]].groupby(keys, dropna=False)["delta_run_exp"].sum()
+    s["Take RV"] = sign * px[~px["is_swing"]].groupby(keys, dropna=False)["delta_run_exp"].sum()
+    fs = px[px["is_first"]].groupby(keys, dropna=False)
+    s["FPSwing%"] = fs["is_swing"].sum() / fs.size().replace(0, np.nan)
     if role == "batter":
         s["RV"] = rv
     else:

@@ -69,6 +69,9 @@ def boxscore_starts(season: int) -> dict:
             log(f"  boxscore {g['gamePk']} failed: {e}")
             return g["gamePk"], None
 
+    meta = {g["gamePk"]: (g.get("officialDate") or g.get("gameDate", "")[:10],
+                          g["teams"]["away"]["team"]["id"], g["teams"]["home"]["team"]["id"],
+                          g["teams"]["away"].get("score"), g["teams"]["home"].get("score")) for g in games}
     rows, sp_ids, gs = [], set(), Counter()
     with ThreadPoolExecutor(max_workers=12) as ex:
         for pk, box in ex.map(one, games):
@@ -91,13 +94,37 @@ def boxscore_starts(season: int) -> dict:
                     if not bo or int(bo) % 100 != 0:
                         continue
                     pos = (p.get("allPositions") or [p.get("position", {})])[0].get("abbreviation")
+                    date, aw, hm, asc, hsc = meta.get(pk, ("", None, None, None, None))
                     rows.append({"game": pk, "team": tid, "slot": int(bo) // 100, "id": p["person"]["id"],
-                                 "name": p["person"]["fullName"], "pos": pos, "opp_sp": starters.get(opp)})
+                                 "name": p["person"]["fullName"], "pos": pos, "opp_sp": starters.get(opp),
+                                 "date": date, "home": side == "home", "opp": hm if side == "away" else aw,
+                                 "rs": hsc if side == "home" else asc, "ra": asc if side == "home" else hsc,
+                                 "sp": starters.get(side)})
     people = mlb_people(list(sp_ids))
     hand = {pid: people.get(pid, {}).get("pitchHand", {}).get("code") for pid in sp_ids}
+    sp_names = {pid: people.get(pid, {}).get("fullName", "") for pid in sp_ids}
     for r in rows:
         r["opp_hand"] = hand.get(r["opp_sp"])
-    return {"starts": rows, "gs": gs}
+    return {"starts": rows, "gs": gs, "sp_names": sp_names, "sp_hand": hand}
+
+
+def batting_orders(starts: dict) -> dict:
+    """Baseball-Reference style 'Batting Orders' / 'Defensive Lineups' per team-season.
+    {team: [[date, gamePk, opp, home, rs, ra, oppSP, oppSPhand, [[id,pos],...9]], ...]}"""
+    by = defaultdict(dict)
+    for r in starts["starts"]:
+        g = by[r["team"]].setdefault(r["game"], {"meta": r, "slots": {}})
+        g["slots"][r["slot"]] = [r["id"], r["pos"]]
+    out = {}
+    for tid, games in by.items():
+        lst = []
+        for pk, g in games.items():
+            m = g["meta"]
+            lst.append([m["date"], pk, m["opp"], 1 if m["home"] else 0, m["rs"], m["ra"], m["opp_sp"],
+                        m["opp_hand"], [g["slots"].get(i) for i in range(1, 10)]])
+        lst.sort(key=lambda x: (x[0], x[1]))
+        out[str(tid)] = lst
+    return out
 
 
 def most_common_depth(starts: dict, season: int, pitch_rows: list[dict]) -> dict:
