@@ -29,7 +29,10 @@ export default function Compare() {
 
   const pct = (rows, season, k, v) => {
     if (!rows || typeof v !== 'number') return null;
-    const vals = rows.filter((r) => qualifies(group, r, season)).map((r) => r.splits?.[split]?.[k]).filter((x) => typeof x === 'number').sort((a, b) => a - b);
+    let pool = rows.filter((r) => qualifies(group, r, season));
+    // early season / small samples: fall back to a playing-time floor so percentiles still mean something
+    if (pool.length < 30) pool = rows.filter((r) => (group === 'hitting' ? (r.splits?.all?.PA || 0) >= 100 : (r.splits?.all?.IP || 0) >= 25));
+    const vals = pool.map((r) => r.splits?.[split]?.[k]).filter((x) => typeof x === 'number').sort((a, b) => a - b);
     if (vals.length < 10) return null;
     let i = 0; while (i < vals.length && vals[i] < v) i++;
     const p = Math.round((i / (vals.length - 1)) * 100);
@@ -47,6 +50,14 @@ export default function Compare() {
       </div>
       {edit && <ColumnChooser group={group} value={keys} onChange={setKeys} />}
       {picks.length === 0 && <div className="loading">Add up to five players (any season 2015–2026) to compare.</div>}
+      {picks.length > 0 && (
+        <div className="panel" style={{ marginTop: 12 }}>
+          <h3>Percentile profile</h3>
+          <Radar keys={keys.filter((k) => !['PA', 'IP', 'G', 'GS', 'AB', 'TBF', 'W', 'L'].includes(k)).slice(0, 12)}
+            players={cols.map((c) => ({ name: c.name, season: c.season, vals: Object.fromEntries(keys.map((k) => [k, pct(c.rows, c.season, k, c.line?.[k])])) }))}
+            label={(k) => statDef(group, k).label} />
+        </div>
+      )}
       {picks.length > 0 && (
         <div className="tbl-wrap" style={{ marginTop: 12 }}>
           <table className="t">
@@ -128,5 +139,41 @@ function AddPlayer({ onAdd }) {
         </div>
       )}
     </span>
+  );
+}
+
+const RADAR_COLORS = ['#c8102e', '#0b4f8a', '#1a8a3a', '#d18b00', '#6b4fa0'];
+
+/** Spider chart of league percentiles (0 center, 100 rim) for up to five player-seasons. */
+function Radar({ keys, players, label }) {
+  if (keys.length < 3) return <div className="muted small">Choose at least three rate stats to draw the profile.</div>;
+  const size = 440, c = size / 2, R = 128;
+  const ang = (i) => -Math.PI / 2 + (i / keys.length) * Math.PI * 2;
+  const pt = (i, v) => [c + Math.cos(ang(i)) * R * (v / 100), c + Math.sin(ang(i)) * R * (v / 100)];
+  return (
+    <div className="radar-wrap">
+      <svg viewBox={`0 0 ${size} ${size}`} className="radar" role="img" aria-label="Percentile radar chart">
+        {[25, 50, 75, 100].map((g) => (
+          <polygon key={g} points={keys.map((_, i) => pt(i, g).join(',')).join(' ')} fill="none" stroke="var(--line)" strokeWidth={g === 50 ? 1.2 : 0.8} />
+        ))}
+        {keys.map((k, i) => {
+          const [x, y] = pt(i, 100), [lx, ly] = pt(i, 116);
+          return (
+            <g key={k}>
+              <line x1={c} y1={c} x2={x} y2={y} stroke="var(--line)" />
+              <text x={lx} y={ly} fontSize="10.5" fill="var(--muted)" textAnchor={Math.abs(lx - c) < 8 ? 'middle' : lx > c ? 'start' : 'end'} dominantBaseline="middle">{label(k)}</text>
+            </g>
+          );
+        })}
+        {players.map((p, j) => (
+          <polygon key={j} points={keys.map((k, i) => pt(i, p.vals[k] ?? 0).join(',')).join(' ')}
+            fill={RADAR_COLORS[j % 5]} fillOpacity="0.12" stroke={RADAR_COLORS[j % 5]} strokeWidth="2" />
+        ))}
+      </svg>
+      <div className="radar-legend">
+        {players.map((p, j) => <span key={j}><i style={{ background: RADAR_COLORS[j % 5] }} />{p.name} {p.season}</span>)}
+        <span className="muted small">Rim = 100th percentile among qualified players that season and split; thicker ring = league median.</span>
+      </div>
+    </div>
   );
 }

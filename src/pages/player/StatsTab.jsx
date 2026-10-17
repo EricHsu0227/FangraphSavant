@@ -8,7 +8,7 @@ import DataTable from '../../components/DataTable.jsx';
 import ColumnChooser from '../../components/ColumnChooser.jsx';
 
 /** FanGraphs-style season tables: every preset, custom columns, L/R toggle, heat map, minors. */
-export default function StatsTab({ id, group, rows }) {
+export default function StatsTab({ id, group, rows, person }) {
   const [split, setSplit] = useState('all');
   const [preset, setPreset] = usePref(`pstats:preset:${group}`, 'Dashboard');
   const [custom, setCustom] = usePref(`pstats:custom:${group}`, PRESETS[group].Dashboard);
@@ -41,6 +41,40 @@ export default function StatsTab({ id, group, rows }) {
       <div style={{ height: 10 }} />
       <DataTable rows={data} cols={cols} totalRow={tot} heat={heat} />
       {minors && <Minors id={id} group={group} />}
+      <Fielding person={person} rows={rows} />
+    </>
+  );
+}
+
+/** Fielding by season and position (MLB) with Statcast FRV / OAA / arm alongside. */
+function Fielding({ person, rows }) {
+  const fs = (person?.stats || []).find((s) => s.group?.displayName === 'fielding' && s.type?.displayName === 'yearByYear');
+  const list = (fs?.splits || []).filter((x) => (x.sport?.id ?? 1) === 1 && x.position?.abbreviation !== 'P').map((x, i) => {
+    const st = x.stat || {};
+    const sc = rows.find((r) => r.season === Number(x.season))?.splits?.all || {};
+    const inn = parseFloat(st.innings) || 0;
+    return {
+      _key: i, season: Number(x.season), team: x.team?.abbreviation || x.team?.name, pos: x.position?.abbreviation,
+      G: st.gamesPlayed, GS: st.gamesStarted, Inn: inn, PO: st.putOuts, A: st.assists, E: st.errors, DP: st.doublePlays,
+      FPCT: st.fielding ? Number(st.fielding) : null, RF9: inn ? (9 * ((st.putOuts || 0) + (st.assists || 0))) / inn : null,
+      CS: st.caughtStealing, SB: st.stolenBases, PB: st.passedBall,
+      frv: sc.frv, oaa: sc.oaa,
+    };
+  });
+  if (!list.length) return null;
+  const catcher = list.some((r) => r.pos === 'C');
+  return (
+    <>
+      <h3>Fielding</h3>
+      <DataTable rows={list} defaultSort={{ key: 'season', dir: 'desc' }} cols={[
+        { key: 'season', label: 'Season', left: true }, { key: 'team', label: 'Team', left: true }, { key: 'pos', label: 'Pos', left: true },
+        { key: 'G', label: 'G' }, { key: 'GS', label: 'GS' }, { key: 'Inn', label: 'Inn', f: (v) => (v ? v.toFixed(1) : '') },
+        { key: 'PO', label: 'PO' }, { key: 'A', label: 'A' }, { key: 'E', label: 'E' }, { key: 'DP', label: 'DP' },
+        { key: 'FPCT', label: 'Fld%', f: (v) => (v == null ? '' : v.toFixed(3)) }, { key: 'RF9', label: 'RF/9', f: (v) => (v == null ? '' : v.toFixed(2)) },
+        ...(catcher ? [{ key: 'SB', label: 'SB' }, { key: 'CS', label: 'CS' }, { key: 'PB', label: 'PB' }] : []),
+        { key: 'frv', label: 'FRV (season)', title: 'Savant fielding run value, all positions', f: (v) => (v == null ? '' : Math.round(v)) },
+        { key: 'oaa', label: 'OAA (season)', f: (v) => (v == null ? '' : Math.round(v)) },
+      ]} />
     </>
   );
 }

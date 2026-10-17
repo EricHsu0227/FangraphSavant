@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { Component, useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { SEASONS } from '../lib/guts.js';
 
@@ -96,4 +96,20 @@ export function SourceNote({ source }) {
       xwOBA, batted-ball and WAR columns fill in once the data pipeline has run.
     </div>
   );
+}
+
+/** Keeps one broken panel from blanking the whole app. */
+export class ErrorBoundary extends Component {
+  constructor(p) { super(p); this.state = { err: null }; }
+  static getDerivedStateFromError(err) { return { err }; }
+  componentDidUpdate(prev) { if (prev.resetKey !== this.props.resetKey && this.state.err) this.setState({ err: null }); }
+  componentDidCatch(err, info) { console.error('Panel crashed:', err, info?.componentStack); }
+  render() {
+    if (!this.state.err) return this.props.children;
+    return (
+      <div className="notice" role="alert">
+        This section hit an error and couldn’t be shown ({String(this.state.err.message || this.state.err)}). Other parts of the page still work.
+      </div>
+    );
+  }
 }

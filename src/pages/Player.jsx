@@ -67,7 +67,7 @@ export default function Player() {
           )}
         </div>
       </div>
-      <FrontStats group={group} latest={latest} />
+      <FrontStats key={`${id}-${group}`} group={group} latest={latest} />
       <div className="tabs" role="tablist">
         {TABS.map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
       </div>
@@ -81,8 +81,8 @@ export default function Player() {
       {career.data && tab === 'statcast' && <StatcastTab {...ctx} />}
       {career.data && tab === 'charts' && <ChartsTab {...ctx} />}
       {career.data && tab === 'arsenal' && <ArsenalTab {...ctx} />}
-      {tab === 'splits' && <SplitsTab {...ctx} />}
-      {tab === 'logs' && <GameLogs {...ctx} />}
+      {career.data && tab === 'splits' && <SplitsTab key={`${id}-${group}`} {...ctx} />}
+      {career.data && tab === 'logs' && <GameLogs key={`${id}-${group}`} {...ctx} />}
       {career.data && tab === 'proj' && <Projections {...ctx} />}
       {tab === 'bio' && <Bio {...ctx} contract={contracts.data?.[id]} />}
     </>

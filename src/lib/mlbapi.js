@@ -19,7 +19,7 @@ export const headshot = (id, w = 120) =>
 export const teamLogo = (id) => `https://www.mlbstatic.com/team-logos/${id}.svg`;
 
 export const getSchedule = (date) =>
-  api(`/api/v1/schedule?sportId=1&date=${date}&hydrate=linescore,team,probablePitcher,decisions,seriesStatus`, { ttl: 20_000 });
+  api(`/api/v1/schedule?sportId=1&date=${date}&hydrate=linescore,team,probablePitcher,decisions,seriesStatus,venue,broadcasts(all)`, { ttl: 20_000 });
 
 export const getSeasonSchedule = (season, gameTypes = 'R') =>
   api(`/api/v1/schedule?sportId=1&season=${season}&gameType=${gameTypes}&fields=dates,date,games,gamePk,gameDate,officialDate,status,detailedState,abstractGameState,teams,away,home,team,id,score,isWinner,gameType,doubleHeader`, { ttl: 30 * 60_000 });

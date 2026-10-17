@@ -7,6 +7,7 @@ import { teamPlayers } from '../lib/teamPlayers.js';
 import Summary from './team/Summary.jsx';
 import Platoon from './team/Platoon.jsx';
 import Lineups from './team/Lineups.jsx';
+import { Appearances, PostseasonResult } from './team/Extras.jsx';
 import { teamById } from '../lib/teams.js';
 import { PRESETS, statDef } from '../lib/catalog.js';
 import { SEASONS } from '../lib/guts.js';
@@ -42,6 +43,7 @@ export default function Team() {
               {' '}· RS {rec.runsScored} · RA {rec.runsAllowed} · Diff {rec.runDifferential > 0 ? '+' : ''}{rec.runDifferential}
               {' '}· Pythag {Math.round((rec.runsScored ** 1.83 / (rec.runsScored ** 1.83 + rec.runsAllowed ** 1.83)) * (rec.wins + rec.losses))}-{Math.round((rec.runsAllowed ** 1.83 / (rec.runsScored ** 1.83 + rec.runsAllowed ** 1.83)) * (rec.wins + rec.losses))}
             </div>}
+            <PostseasonResult teamId={teamId} season={season} />
           </div>
         </div>
         <div className="row">
@@ -51,12 +53,13 @@ export default function Team() {
         </div>
       </div>
       <div className="tabs">
-        {[['summary', 'Summary'], ['roster', 'Roster & Stats'], ['platoon', 'Platoon & Optimizer'], ['depth', 'Depth Chart'], ['lineups', 'Batting Orders'],
+        {[['summary', 'Summary'], ['roster', 'Roster & Stats'], ['platoon', 'Platoon & Optimizer'], ['depth', 'Depth Chart'], ['lineups', 'Batting Orders'], ['apps', 'Appearances'],
           ['schedule', 'Schedule'], ['splits', 'Team Splits'], ['tx', 'Transactions']].map(([k, l]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
       {tab === 'summary' && <Summary teamId={teamId} season={season} rec={rec} />}
+      {tab === 'apps' && <Appearances teamId={teamId} season={season} />}
       {tab === 'roster' && <RosterStats teamId={teamId} season={season} />}
       {tab === 'platoon' && <Platoon teamId={teamId} season={season} />}
       {tab === 'lineups' && <Lineups teamId={teamId} season={season} />}

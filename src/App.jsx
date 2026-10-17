@@ -1,6 +1,7 @@
-import { NavLink, Route, Routes, Navigate, useLocation, Link } from 'react-router-dom';
+import { NavLink, Route, Routes, Navigate, useLocation, Link, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import SearchBox from './components/SearchBox.jsx';
+import { ErrorBoundary } from './components/ui.jsx';
 import Scores from './pages/Scores.jsx';
 import Game from './pages/Game.jsx';
 import Standings from './pages/Standings.jsx';
@@ -31,6 +32,12 @@ const ICON = {
 const Icon = ({ k }) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ICON[k]}</svg>
 );
+
+/** Fresh player page state (two-way toggle, tab panels) whenever the player changes. */
+function KeyedPlayer() {
+  const { id } = useParams();
+  return <Player key={id} />;
+}
 
 export default function App() {
   const loc = useLocation();
@@ -64,6 +71,7 @@ export default function App() {
         </div>
       )}
       <main>
+        <ErrorBoundary resetKey={loc.pathname + loc.search}>
         <Routes>
           <Route path="/" element={<Navigate to="/scores" replace />} />
           <Route path="/scores" element={<Scores />} />
@@ -74,7 +82,7 @@ export default function App() {
           <Route path="/teams" element={<Teams />} />
           <Route path="/team/:id" element={<Team />} />
           <Route path="/team/:id/:season" element={<Team />} />
-          <Route path="/player/:id" element={<Player />} />
+          <Route path="/player/:id" element={<KeyedPlayer />} />
           <Route path="/postseason" element={<Postseason />} />
           <Route path="/postseason/:season" element={<Postseason />} />
           <Route path="/series/:season/:type/:key" element={<Series />} />
@@ -84,6 +92,7 @@ export default function App() {
           <Route path="/search" element={<Search />} />
           <Route path="*" element={<div className="loading">Page not found.</div>} />
         </Routes>
+        </ErrorBoundary>
       </main>
       <nav className="bottom-nav mobile-only" aria-label="Sections">
         <NavLink to="/scores"><Icon k="scores" /><span>Scores</span></NavLink>

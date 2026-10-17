@@ -22,8 +22,10 @@ COLS = [
     # v2 columns: movement, zone geometry, win expectancy, times through order, arm angle
     "pfx_x", "sz_top", "sz_bot", "delta_home_win_exp", "n_thruorder_pitcher", "arm_angle", "release_pos_x", "release_pos_z",
     "attack_angle", "home_score", "away_score",
+    # v3: base/score state for situational splits
+    "on_1b", "on_2b", "on_3b", "fld_score",
 ]
-REQUIRED_V2 = ["pfx_x", "sz_top", "sz_bot", "delta_home_win_exp", "n_thruorder_pitcher"]
+REQUIRED_V2 = ["pfx_x", "sz_top", "sz_bot", "delta_home_win_exp", "n_thruorder_pitcher", "on_1b", "fld_score"]
 
 URL = "https://baseballsavant.mlb.com/statcast_search/csv"
 

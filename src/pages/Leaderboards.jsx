@@ -1,3 +1,4 @@
+import { regressSplits } from '../lib/platoon.js';
 import { useMemo, useState } from 'react';
 import { loadSeason, loadTeamSeason, loadArsenal } from '../lib/data.js';
 import { PRESETS, statDef, catalog, qualifies, PITCH_NAME, fmt } from '../lib/catalog.js';
@@ -64,6 +65,24 @@ function download(name, text) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = name; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/** vL / vR side by side, observed split (opposite minus same hand) and the regressed "true" split. */
+function platoonFields(r, group) {
+  const L = r.splits?.vL, R = r.splits?.vR;
+  if (!L || !R) return {};
+  const role = group === 'hitting' ? 'batter' : 'pitcher';
+  const hand = group === 'hitting' ? r.bats : r.throws;
+  const out = { pL_PA: L.PA || L.TBF, pL_wOBA: L.wOBA, pL_xwOBA: L.xwOBA, pR_PA: R.PA || R.TBF, pR_wOBA: R.wOBA, pR_xwOBA: R.xwOBA };
+  const reg = hand ? regressSplits({ vL: L, vR: R }, role, hand) : null;
+  if (reg?.metrics?.wOBA) out.platGap = reg.metrics.wOBA.obs;
+  if (reg?.metrics?.xwOBA) {
+    out.platGapX = reg.metrics.xwOBA.obs; out.regGap = reg.metrics.xwOBA.reg;
+    out.trueL = reg.metrics.xwOBA.vL; out.trueR = reg.metrics.xwOBA.vR;
+  } else if (reg?.metrics?.wOBA) {
+    out.regGap = reg.metrics.wOBA.reg; out.trueL = reg.metrics.wOBA.vL; out.trueR = reg.metrics.wOBA.vR;
+  }
+  return out;
 }
 
 export default function Leaderboards() {
@@ -147,7 +166,7 @@ export default function Leaderboards() {
       }
       return true;
     });
-    return rs.map((r) => ({ ...r, ...r.splits[split], _key: r._key, name: r.name, team: r.team, teamId: r.teamId, pos: r.pos, season: r.season }));
+    return rs.map((r) => ({ ...r, ...r.splits[split], ...(scope === 'players' ? platoonFields(r, group) : {}), _key: r._key, name: r.name, team: r.team, teamId: r.teamId, pos: r.pos, season: r.season }));
   }, [data.data, scope, split, lg, team, pos, hand, ageMin, ageMax, rookies, minMode, minVal, name, filters, group, splitSeasons]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const keys = preset === 'Custom' ? custom : PRESETS[group][preset] || PRESETS[group].Dashboard;

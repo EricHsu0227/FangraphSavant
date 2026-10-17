@@ -84,7 +84,7 @@ for day in range(60):
                             "pitch_type": rng.choice(["FF", "SL", "CH", "SI"]), "release_speed": rng.normal(92, 4),
                             "release_spin_rate": rng.normal(2300, 200), "release_extension": rng.normal(6.4, .3), "pfx_z": rng.normal(1.2, .3),
                             "plate_x": rng.normal(0, .8), "plate_z": rng.normal(2.5, .8), "bat_speed": rng.normal(71, 4), "swing_length": 7.2,
-                            "post_bat_score": score[half], "bat_score": score[half], "player_name": "x",
+                            "post_bat_score": score[half], "bat_score": score[half], "fld_score": score["Bot" if half == "Top" else "Top"], "on_1b": 1 if rng.random() < .3 else np.nan, "on_2b": 1 if rng.random() < .2 else np.nan, "on_3b": 1 if rng.random() < .1 else np.nan, "player_name": "x",
                             "pfx_x": rng.normal(-0.5, .5), "sz_top": 3.4, "sz_bot": 1.6,
                             "delta_home_win_exp": (RV[ev] if last else 0) * (0.1 if half == "Bot" else -0.1),
                             "n_thruorder_pitcher": 1 + (inning - 1) // 3, "arm_angle": rng.normal(40, 8),
@@ -187,4 +187,17 @@ assert len(bd["spray"][0]) == 6 and bd["rolling"]
 assert "heart%" in r0["splits"]["all"] and "WPA" in r0["splits"]["all"] and r0.get("pt")
 print("arsenal sample:", ars[0])
 print("counts sample:", bd["counts"]["all"])
+sits = bd["sits"]
+assert {"home", "risp", "lateclose", "pull", "pFB"} <= set(sits) and "vL" in sits["home"], list(sits)
+assert bd["games"] and len(next(iter(bd["games"].values()))) == 8 and bd["plays"] and len(bd["plays"][0]) == 12
+print("sits sample:", sits["risp"]["all"])
 print("OK — pipeline test passed")
+
+# Optional: export the synthetic site data for UI smoke tests (TEST_EXPORT=dir)
+if os.environ.get("TEST_EXPORT"):
+    import shutil
+    dst = Path(os.environ["TEST_EXPORT"])
+    shutil.rmtree(dst, ignore_errors=True)
+    shutil.copytree(common.OUT, dst)
+    json.dump({"seasons": [2025]}, open(dst / "index.json", "w"))
+    print("exported to", dst)

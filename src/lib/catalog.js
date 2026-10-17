@@ -44,6 +44,12 @@ function pitchTypeStats(group) {
 }
 
 export const HITTING = [
+  S('pL_PA', 'PA vL', fmt.int, 'Platoon', null), S('pL_wOBA', 'wOBA vL', fmt.r3, 'Platoon'), S('pL_xwOBA', 'xwOBA vL', fmt.r3, 'Platoon'),
+  S('pR_PA', 'PA vR', fmt.int, 'Platoon', null), S('pR_wOBA', 'wOBA vR', fmt.r3, 'Platoon'), S('pR_xwOBA', 'xwOBA vR', fmt.r3, 'Platoon'),
+  S('platGap', 'Split (wOBA)', fmt.r3, 'Platoon', null, 'Observed wOBA vs opposite-hand pitchers minus same-hand'),
+  S('platGapX', 'Split (xwOBA)', fmt.r3, 'Platoon', null, 'Observed xwOBA vs opposite-hand minus same-hand'),
+  S('regGap', 'True split', fmt.r3, 'Platoon', null, 'Platoon split regressed to the league norm for his handedness (The Book method)'),
+  S('trueL', 'True xwOBA vL', fmt.r3, 'Platoon', true, 'Regressed xwOBA vs LHP'), S('trueR', 'True xwOBA vR', fmt.r3, 'Platoon', true, 'Regressed xwOBA vs RHP'),
   S('G', 'G', fmt.int, 'Standard'), S('PA', 'PA', fmt.int, 'Standard'), S('AB', 'AB', fmt.int, 'Standard'),
   S('H', 'H', fmt.int, 'Standard'), S('2B', '2B', fmt.int, 'Standard'), S('3B', '3B', fmt.int, 'Standard'),
   S('HR', 'HR', fmt.int, 'Standard'), S('R', 'R', fmt.int, 'Standard'), S('RBI', 'RBI', fmt.int, 'Standard'),
@@ -109,6 +115,12 @@ export const HITTING = [
 ];
 
 export const PITCHING = [
+  S('pL_PA', 'PA vL', fmt.int, 'Platoon', null), S('pL_wOBA', 'wOBA vL', fmt.r3, 'Platoon', false), S('pL_xwOBA', 'xwOBA vL', fmt.r3, 'Platoon', false),
+  S('pR_PA', 'PA vR', fmt.int, 'Platoon', null), S('pR_wOBA', 'wOBA vR', fmt.r3, 'Platoon', false), S('pR_xwOBA', 'xwOBA vR', fmt.r3, 'Platoon', false),
+  S('platGap', 'Split (wOBA)', fmt.r3, 'Platoon', null, 'Observed wOBA allowed vs opposite-hand batters minus same-hand'),
+  S('platGapX', 'Split (xwOBA)', fmt.r3, 'Platoon', null, 'Observed xwOBA allowed vs opposite-hand minus same-hand'),
+  S('regGap', 'True split', fmt.r3, 'Platoon', null, 'Platoon split regressed to the league norm for his handedness (The Book method)'),
+  S('trueL', 'True xwOBA vL', fmt.r3, 'Platoon', false, 'Regressed xwOBA allowed vs LHB'), S('trueR', 'True xwOBA vR', fmt.r3, 'Platoon', false, 'Regressed xwOBA allowed vs RHB'),
   S('W', 'W', fmt.int, 'Standard'), S('L', 'L', fmt.int, 'Standard', false), S('G', 'G', fmt.int, 'Standard'),
   S('GS', 'GS', fmt.int, 'Standard'), S('SV', 'SV', fmt.int, 'Standard'), S('HLD', 'HLD', fmt.int, 'Standard'),
   S('IP', 'IP', fmt.ip, 'Standard'), S('TBF', 'TBF', fmt.int, 'Standard'), S('H', 'H', fmt.int, 'Standard', false),
@@ -172,6 +184,7 @@ export const PRESETS = {
     'Bat Tracking': ['PA', 'BatSpeed', 'Squared%', 'Blast%', 'EV', 'EV90', 'Barrel%', 'xwOBAcon'],
     'Pitch Value': ['PA', ...PITCH_TYPES.map(([p]) => `pt_${p}_rv100`)],
     'Pitch Type': ['PA', ...PITCH_TYPES.map(([p]) => `pt_${p}_use`)],
+    Platoon: ['PA', 'pL_PA', 'pL_wOBA', 'pL_xwOBA', 'pR_PA', 'pR_wOBA', 'pR_xwOBA', 'platGap', 'platGapX', 'regGap', 'trueL', 'trueR'],
   },
   pitching: {
     Dashboard: ['W', 'L', 'G', 'GS', 'IP', 'K%', 'BB%', 'ERA', 'FIP', 'wOBA', 'xwOBA', 'wRCplusAllowed', 'WAR_FIP', 'WAR_wOBA', 'vWAR', 'eWAR'],
@@ -179,6 +192,7 @@ export const PRESETS = {
     Advanced: ['IP', 'K9', 'BB9', 'HR9', 'K%', 'BB%', 'K-BB%', 'ERA', 'FIP', 'xERA', 'wOBA', 'xwOBA', 'wRCplusAllowed'],
     Statcast: ['IP', 'EV', 'LA', 'Barrel%', 'HardHit%', 'xBA', 'xSLG', 'xwOBA', 'xERA', 'FBvelo', 'FBspin', 'IVB', 'Ext'],
     'Plate Discipline': ['IP', 'Zone%', 'Chase%', 'Whiff%', 'CSW%', 'FPS%', 'K%', 'BB%'],
+    Platoon: ['TBF', 'pL_PA', 'pL_wOBA', 'pL_xwOBA', 'pR_PA', 'pR_wOBA', 'pR_xwOBA', 'platGap', 'platGapX', 'regGap', 'trueL', 'trueR'],
     'WAR': ['IP', 'FIP', 'WAR_FIP', 'wOBA', 'WAR_wOBA', 'xwOBA', 'valuePlus', 'expectedPlus', 'vWAR', 'eWAR', 'fWAR'],
     '+ Stats': ['IP', 'ERA-', 'FIP-', 'K%+', 'BB%+', 'xwOBA+', 'wRCplusAllowed'],
     'Win Probability': ['IP', 'WPA', 'RE24', 'ERA', 'wOBA'],

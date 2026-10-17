@@ -2,7 +2,7 @@
 :root {
   --bg: #f3f1ea; --panel: #ffffff; --panel-2: #faf9f5; --ink: #151a21; --muted: #646a74; --line: #e3e0d6; --chip: #ecE9e0;
   --accent: #0b4f8a; --accent-2: #c8102e; --hdr: #0f1d2e; --hdr-2: #1b2d44; --hdr-ink: #f3f1ea;
-  --lhh: #2c6fbb; --rhh: #c4512b; --good: #c62828; --bad: #1d5fa8; --ok: #1a8a3a;
+  --lhh: #2c6fbb; --rhh: #c4512b; --good: #c62828; --bad: #1d5fa8; --ok: #1a8a3a; --win: #1f8a4c; --loss: #b8322a;
   --field: #e6efe1; --infield: #efe2cf; --out: #8a8f98; --h1: #2c6fbb; --h2: #1a8a3a; --h3: #d18b00; --hr: #c8102e;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --sans: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -159,7 +159,7 @@ table.t tr.sub td { color: var(--muted); }
 .game-card:hover { border-color: var(--accent); text-decoration: none; }
 .game-card .tm { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-weight: 600; }
 .game-card .tm img { width: 24px; height: 24px; }
-.game-card .tm .sc { margin-left: auto; font-family: var(--mono); font-size: 18px; }
+.game-card .tm .sc { margin-left: auto; font-family: var(--mono); font-size: 18px; min-width: 26px; text-align: right; }
 .game-card .tm.lost { color: var(--muted); font-weight: 500; }
 .game-card .st { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; }
 .wp-mini { height: 4px; border-radius: 2px; background: var(--chip); overflow: hidden; margin-top: 8px; display: flex; }
@@ -245,3 +245,28 @@ table.t tr.sub td { color: var(--muted); }
     top: calc(52px + env(safe-area-inset-top, 0px)); background: var(--bg); z-index: 5; }
   select, input[type=text], input[type=number], input[type=date] { font-size: 16px; }   /* stops iOS zoom-on-focus */
 }
+
+/* team extras */
+.span-all { grid-column: 1 / -1; }
+.chart-scroll { overflow-x: auto; padding-bottom: 4px; }
+.chart-scroll svg { display: block; }
+.top-players { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.top-players .tp { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 8px; align-items: center;
+  padding: 6px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); position: relative; }
+.top-players .tp:hover { border-color: var(--accent); text-decoration: none; }
+.top-players .tp img { grid-row: 1 / 3; width: 44px; height: 44px; border-radius: 6px; object-fit: cover; background: var(--chip); }
+.top-players .tp-name { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.top-players .tp-sub { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.top-players .tp-rank { position: absolute; top: -7px; left: -7px; background: var(--hdr); color: var(--hdr-ink); font-size: 10px; font-weight: 700;
+  width: 18px; height: 18px; border-radius: 9px; display: grid; place-items: center; }
+
+.radar-wrap { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.radar { width: min(420px, 100%); height: auto; overflow: visible; }
+.radar-legend { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1 1 200px; }
+.radar-legend span { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.radar-legend i { width: 14px; height: 4px; border-radius: 2px; display: inline-block; }
+
+.game-card .rhe-h { display: flex; justify-content: flex-end; gap: 0; font-size: 10px; color: var(--muted); margin-bottom: -2px; }
+.game-card .rhe-h span { width: 22px; text-align: right; }
+.game-card .rhe-h span:first-child { width: 26px; }
+.game-card .tm .rhe { width: 22px; text-align: right; font-size: 13px; color: var(--muted); }

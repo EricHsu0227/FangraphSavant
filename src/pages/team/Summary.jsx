@@ -5,6 +5,7 @@ import { statDef, fmt } from '../../lib/catalog.js';
 import { useAsync, Loading, PlayerLink } from '../../components/ui.jsx';
 import DataTable from '../../components/DataTable.jsx';
 import { LineChart } from '../../components/charts.jsx';
+import { ResultsBars, TopPlayers, getAttendance } from './Extras.jsx';
 
 const n = (v) => +v || 0;
 
@@ -27,6 +28,8 @@ export default function Summary({ teamId, season, rec }) {
   const coaches = useAsync(() => getCoaches(teamId, season).catch(() => null), [teamId, season]);
   const sched = useAsync(() => getSeasonSchedule(season), [season]);
   const boot = useAsync(() => bootData(), []);
+  const att = useAsync(() => getAttendance(teamId, season).catch(() => null), [teamId, season]);
+  const attRec = att.data?.records?.[0];
   const pf = boot.data?.parks?.[season]?.[teamId];
 
   const run = useMemo(() => {
@@ -78,6 +81,13 @@ export default function Summary({ teamId, season, rec }) {
 
   return (
     <div className="grid g2">
+      <div className="panel span-all">
+        <h3>Game results</h3>
+        <ResultsBars teamId={teamId} season={season} />
+      </div>
+      <div className="panel span-all">
+        <TopPlayers teamId={teamId} season={season} />
+      </div>
       <div className="panel">
         <h3>Season summary</h3>
         {rec ? (
@@ -119,6 +129,12 @@ export default function Summary({ teamId, season, rec }) {
             {pf.R && <div className="tile"><div className="k">vs RHB</div><div className="v">{Math.round(pf.R * 100)}</div><div className="d muted">wOBA-based</div></div>}
           </div>
         ) : <div className="muted small">Park factors appear once the data is built.</div>}
+        {attRec?.attendanceTotal && (
+          <div className="small" style={{ marginBottom: 8 }}>
+            Attendance <b>{Number(attRec.attendanceTotal).toLocaleString()}</b>
+            {attRec.attendanceAverageHome ? <> · {Number(attRec.attendanceAverageHome).toLocaleString()} per home game</> : null}
+          </div>
+        )}
         {(coaches.data?.roster || []).slice(0, 14).map((c, i) => (
           <div key={i} className="small" style={{ padding: '4px 0', borderBottom: '1px solid var(--line)' }}>
             <span className="muted">{c.job}</span> · <PlayerLink id={c.person?.id} name={c.person?.fullName} />

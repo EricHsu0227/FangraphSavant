@@ -93,6 +93,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -117,6 +119,11 @@ jobs:
           git config user.name "platoon-data-bot"
           git config user.email "actions@users.noreply.github.com"
           git add public/data pipeline/work
-          if git diff --cached --quiet; then echo "no data changes"; else
-            git commit -m "data: $(date -u +%Y-%m-%d) update" && git push
-          fi
+          if git diff --cached --quiet; then echo "no data changes"; exit 0; fi
+          git commit -m "data: $(date -u +%Y-%m-%d) update"
+          # main may have moved (code pushes) while seasons were building: rebase the data commit and retry
+          for i in 1 2 3 4; do
+            git pull --rebase -X theirs origin main && git push origin HEAD:main && exit 0
+            echo "push attempt $i failed; retrying"; sleep $((i * 15))
+          done
+          exit 1

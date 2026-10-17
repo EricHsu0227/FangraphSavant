@@ -95,12 +95,15 @@ function GameCard({ g }) {
         <Link to={`/team/${t.team.id}/${g.season || ''}`} onClick={stop} style={{ color: 'inherit' }}>{t.team.teamName || t.team.name}</Link>
         <span className="muted small">{t.leagueRecord ? `${t.leagueRecord.wins}-${t.leagueRecord.losses}` : ''}</span>
         <span className="sc">{pre ? '' : t.score ?? ''}</span>
+        {!pre && <span className="rhe mono">{ls?.teams?.[s]?.hits ?? ''}</span>}
+        {!pre && <span className="rhe mono">{ls?.teams?.[s]?.errors ?? ''}</span>}
       </div>
     );
   };
   const time = new Date(g.gameDate).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   return (
     <div className="game-card" role="link" tabIndex={0} onClick={open} onKeyDown={(e) => e.key === 'Enter' && open()} style={{ cursor: 'pointer' }}>
+      {!pre && <div className="rhe-h"><span>R</span><span>H</span><span>E</span></div>}
       {side('away')}
       {side('home')}
       <div className="st">
@@ -113,6 +116,9 @@ function GameCard({ g }) {
         {g.seriesStatus?.description && g.gameType !== 'R' && <span>{g.seriesStatus.shortDescription || g.seriesStatus.description}</span>}
       </div>
       {pre && <div className="st"><span><P p={g.teams.away.probablePitcher} /> vs <P p={g.teams.home.probablePitcher} /></span></div>}
+      {(g.venue?.name || g.broadcasts?.length) && (
+        <div className="st"><span className="muted">{g.venue?.name}{g.broadcasts?.length ? ` · ${[...new Set(g.broadcasts.filter((b) => b.type === 'TV').map((b) => b.name))].slice(0, 2).join(', ')}` : ''}</span></div>
+      )}
       {live && ls?.offense?.batter && <div className="st"><span>AB: <P p={ls.offense.batter} /> · P: <P p={ls.defense?.pitcher} /></span></div>}
       {fin && g.decisions && (
         <div className="st"><span>W <P p={g.decisions.winner} /> · L <P p={g.decisions.loser} />{g.decisions.save && <> · SV <P p={g.decisions.save} /></>}</span></div>
