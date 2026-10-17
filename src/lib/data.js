@@ -1,7 +1,7 @@
 // Loads pipeline-built JSON (Statcast/FanGraphs layer) from ./data/, falling back to
 // MLB Stats API counting stats (wOBA/wRC+ computed client-side) when a season
 // has not been built yet.
-import { getLeagueStats, splitsOf } from './mlbapi.js';
+import { getLeagueStats, getTeamsStats, splitsOf } from './mlbapi.js';
 import { fromMLB, deriveHitting, derivePitching, hitterValueExpected, pitcherValueExpected } from './stats.js';
 import { setGutsOverride } from './guts.js';
 
@@ -131,6 +131,37 @@ async function fromMlbApi(season, group) {
     }
   });
   return [...byId.values()];
+}
+
+/** Team-season lines (MLB API counting, exact) + team Statcast rates from the pipeline. */
+export async function loadTeamSeason(season, group) {
+  const key = `team:${season}:${group}`;
+  if (cache.has(key)) return cache.get(key);
+  const p = (async () => {
+    const [parts, ts, { parks }] = await Promise.all([
+      Promise.all(SPLITS.map((s) => getTeamsStats(season, group, SIT[s]).catch(() => null))),
+      loadJSON(`${season}/team_stats.json`), bootData(),
+    ]);
+    const role = group === 'hitting' ? 'batter' : 'pitcher';
+    const by = new Map();
+    parts.forEach((resp, i) => {
+      for (const sp of splitsOf(resp)) {
+        const id = sp.team?.id;
+        if (!id) continue;
+        let r = by.get(id);
+        if (!r) { r = { id, name: sp.team.name, teamId: id, splits: {} }; by.set(id, r); }
+        const line = fromMLB(sp.stat, group);
+        const sc = ts?.[id]?.[role]?.[SPLITS[i]];
+        if (sc) for (const [k, v] of Object.entries(sc)) if (!(k in line) && typeof v === 'number') line[k] = v;
+        delete line.wOBA;
+        const pf = parks?.[season]?.[id]?.all || 1;
+        r.splits[SPLITS[i]] = group === 'hitting' ? deriveHitting(line, season, pf) : derivePitching(line, season, pf);
+      }
+    });
+    return [...by.values()];
+  })();
+  cache.set(key, p);
+  return p;
 }
 
 export async function loadTeamsMeta(season) { return loadJSON(`${season}/teams.json`); }

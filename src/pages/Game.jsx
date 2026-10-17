@@ -8,6 +8,7 @@ import { fmt } from '../lib/catalog.js';
 import { loadSeason } from '../lib/data.js';
 import { PlayerLink, Loading, Err, Seg } from '../components/ui.jsx';
 import DataTable from '../components/DataTable.jsx';
+import { Gameday, PitchTracker, GameInfo, Bullpen, LineupProjection } from './game/Extras.jsx';
 
 export default function Game() {
   const { pk } = useParams();
@@ -15,7 +16,7 @@ export default function Game() {
   const [wp, setWp] = useState([]);
   const [err, setErr] = useState(null);
   const [grid, setGrid] = useState(null);
-  const [tab, setTab] = useState('box');
+  const [tab, setTab] = useState('gameday');
 
   useEffect(() => { loadXwobaGrid().then(setGrid); }, []);
   useEffect(() => {
@@ -47,14 +48,27 @@ export default function Game() {
       {live && <LivePanel gd={gd} ld={ld} season={season} />}
       {!preview && <Linescore gd={gd} ld={ld} />}
       {preview && <Preview gd={gd} season={season} />}
+      {preview && (
+        <>
+          <h2>Projected matchups</h2>
+          <LineupProjection gd={gd} ld={ld} season={season} />
+          <h2>Bullpen</h2>
+          <Bullpen gd={gd} />
+        </>
+      )}
       {!preview && (
         <>
           <div className="tabs">
-            {[['box', 'Box Score'], ['pbp', 'Play-by-Play'], ['wp', 'Win Probability'], ['bb', 'Batted Balls']].map(([k, l]) => (
+            {[['gameday', 'Gameday'], ['box', 'Box Score'], ['pbp', 'Play-by-Play'], ['wp', 'Win Probability'], ['pitches', 'Pitch Tracker'],
+              ['bb', 'Batted Balls'], ['proj', 'Matchups'], ['pen', 'Bullpen']].map(([k, l]) => (
               <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>
             ))}
           </div>
-          {tab === 'box' && <BoxScore gd={gd} ld={ld} wp={wp} grid={grid} season={season} />}
+          {tab === 'gameday' && <Gameday gd={gd} ld={ld} />}
+          {tab === 'box' && <><BoxScore gd={gd} ld={ld} wp={wp} grid={grid} season={season} /><div style={{ height: 14 }} /><GameInfo gd={gd} ld={ld} /></>}
+          {tab === 'pitches' && <PitchTracker gd={gd} ld={ld} />}
+          {tab === 'proj' && <LineupProjection gd={gd} ld={ld} season={season} />}
+          {tab === 'pen' && <Bullpen gd={gd} />}
           {tab === 'pbp' && <PlayByPlay gd={gd} ld={ld} wp={wp} live={live} />}
           {tab === 'wp' && <WinProb gd={gd} wp={wp} />}
           {tab === 'bb' && <BattedBalls gd={gd} ld={ld} />}

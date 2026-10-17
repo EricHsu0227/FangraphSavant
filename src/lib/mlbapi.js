@@ -63,6 +63,11 @@ export const getCoaches = (teamId, season) => api(`/api/v1/teams/${teamId}/coach
 export const getTeamTransactions = (teamId, start, end) =>
   api(`/api/v1/transactions?teamId=${teamId}&startDate=${start}&endDate=${end}`, { ttl: 3600_000 });
 export const getVenue = (id) => api(`/api/v1/venues/${id}?hydrate=fieldInfo,location`, { ttl: 7 * 24 * 3600_000 });
+export const getTeamsStats = (season, group, sit) =>
+  api(`/api/v1/teams/stats?season=${season}&group=${group}&sportIds=1&gameType=R&stats=${sit ? 'statSplits' : 'season'}${sit ? `&sitCodes=${sit}` : ''}`, { ttl: 30 * 60_000 });
+export const getPeople = (ids) => api(`/api/v1/people?personIds=${ids.join(',')}`, { ttl: 24 * 3600_000 });
+export const getTeamRange = (teamId, start, end) =>
+  api(`/api/v1/schedule?sportId=1&teamId=${teamId}&startDate=${start}&endDate=${end}`, { ttl: 10 * 60_000 });
 export const getTransactions = (id) => api(`/api/v1/transactions?playerId=${id}`, { ttl: 3600_000 });
 
 export const searchPeople = (q) => api(`/api/v1/people/search?names=${encodeURIComponent(q)}&sportIds=1&active=false&hydrate=currentTeam`, { ttl: 3600_000 });

@@ -1,35 +1,19 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { loadSeries } from '../lib/postseason.js';
-import { getLiveFeed, getWinProb, teamLogo } from '../lib/mlbapi.js';
-import { linesFromPlays, loadXwobaGrid } from '../lib/game.js';
+import { teamLogo } from '../lib/mlbapi.js';
 import { loadPostseasonStatcast } from '../lib/data.js';
-import { addLines, deriveHitting, derivePitching } from '../lib/stats.js';
-import { guts } from '../lib/guts.js';
+import { aggregateGames } from '../lib/playsAgg.js';
+import { deriveHitting, derivePitching } from '../lib/stats.js';
 import { fmt } from '../lib/catalog.js';
 import { teamById, seriesName } from '../lib/teams.js';
 import { useAsync, Loading, Err, PlayerLink, Seg } from '../components/ui.jsx';
 import DataTable from '../components/DataTable.jsx';
+import TopPlays from '../components/TopPlays.jsx';
 import { SeriesCard } from './Postseason.jsx';
 
-/** Aggregate every game of a series from live feeds: lines, WPA, names, sides. */
-async function seriesLines(s, season) {
-  const grid = await loadXwobaGrid();
-  const g = guts(season);
-  const bat = {}, pit = {}, info = {};
-  const finals = s.games.filter((x) => x.status.abstractGameState !== 'Preview');
-  await Promise.all(finals.map(async (game) => {
-    const [feed, wp] = await Promise.all([getLiveFeed(game.gamePk), getWinProb(game.gamePk).catch(() => [])]);
-    const res = linesFromPlays(feed.liveData.plays.allPlays, wp, grid, g);
-    for (const side of ['away', 'home']) {
-      const bt = feed.liveData.boxscore.teams[side];
-      for (const p of Object.values(bt.players)) info[p.person.id] = { name: p.person.fullName, team: bt.team.id };
-    }
-    for (const [id, l] of Object.entries(res.bat)) bat[id] = addLines(bat[id], l);
-    for (const [id, l] of Object.entries(res.pit)) pit[id] = addLines(pit[id], l);
-  }));
-  return { bat, pit, info };
-}
+/** Aggregate every game of a series from live feeds: lines, WPA, names, sides, top plays. */
+const seriesLines = (s, season) => aggregateGames(s.games.filter((x) => x.status.abstractGameState !== 'Preview'), season);
 
 export default function Series() {
   const { season: sp, type, key } = useParams();
@@ -119,6 +103,8 @@ function SeriesDetail({ s, season }) {
             { key: 'wRCplusAllowed', label: 'wRC+ a', hb: false }, { key: 'Whiff%', label: 'Whiff%', f: fmt.pct, hb: true },
             { key: 'WPA', label: 'WPA', f: (v) => (v == null ? '' : v.toFixed(2)), hb: true },
           ]} />
+          <h2>Top plays</h2>
+          <TopPlays top={lines.data.top} />
         </>
       )}
     </>

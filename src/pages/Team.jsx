@@ -1,59 +1,27 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { getStandings, getTeamPlayerStats, getSeasonSchedule, getRoster, splitsOf, teamLogo, today } from '../lib/mlbapi.js';
-import { loadSeason, loadTeamsMeta, parkFactor } from '../lib/data.js';
-import { fromMLB, deriveHitting, derivePitching, addLines, hitterValueExpected, pitcherValueExpected } from '../lib/stats.js';
+import { getStandings, getSeasonSchedule, getRoster, getTeamTransactions, teamLogo, today } from '../lib/mlbapi.js';
+import { loadTeamsMeta, loadTeamSeason } from '../lib/data.js';
+import { deriveHitting, derivePitching, addLines } from '../lib/stats.js';
+import { teamPlayers } from '../lib/teamPlayers.js';
+import Summary from './team/Summary.jsx';
+import Platoon from './team/Platoon.jsx';
+import Lineups from './team/Lineups.jsx';
 import { teamById } from '../lib/teams.js';
 import { PRESETS, statDef } from '../lib/catalog.js';
 import { SEASONS } from '../lib/guts.js';
 import { Seg, useAsync, Loading, Err, PlayerLink, SeasonSelect } from '../components/ui.jsx';
 import DataTable from '../components/DataTable.jsx';
 
-const SIT = { all: null, vL: 'vl', vR: 'vr' };
 
 /** Per-team player lines (MLB API, exact per stint) enriched with Statcast fields from the pipeline. */
-async function teamPlayers(teamId, season, group) {
-  const [parts, sc, pf] = await Promise.all([
-    Promise.all(['all', 'vL', 'vR'].map((s) => getTeamPlayerStats(teamId, season, group, SIT[s]).catch(() => null))),
-    loadSeason(season, group).catch(() => []),
-    parkFactor(season, teamId),
-  ]);
-  const scById = new Map((sc || []).map((r) => [r.id, r]));
-  const byId = new Map();
-  ['all', 'vL', 'vR'].forEach((s, i) => {
-    for (const sp of splitsOf(parts[i])) {
-      const id = sp.player?.id;
-      if (!id) continue;
-      let r = byId.get(id);
-      if (!r) { r = { id, name: sp.player.fullName, pos: sp.position?.abbreviation, splits: {} }; byId.set(id, r); }
-      const line = fromMLB(sp.stat, group);
-      const scRow = scById.get(id);
-      const stint = scRow?.stints?.find((x) => x.teamId === teamId)?.splits?.[s];
-      const scLine = stint || (scRow && (!scRow.stints || scRow.stints.length <= 1) ? scRow.splits?.[s] : null);
-      if (scLine) for (const [k, v] of Object.entries(scLine)) if (!(k in line) && typeof v === 'number') line[k] = v;
-      // drop pipeline-derived rates so they recompute on this team's line
-      delete line.wOBA;
-      const d = group === 'hitting' ? deriveHitting(line, season, pf) : derivePitching(line, season, pf);
-      if (s === 'all') {
-        Object.assign(d, group === 'hitting'
-          ? hitterValueExpected(d, season, { woba: d.wOBA, xwoba: d.xwOBA, pf, bsr: scRow?.bsr, frv: scRow?.frv, pos: r.pos })
-          : pitcherValueExpected(d, season, { woba: d.wOBA, xwoba: d.xwOBA, pf }));
-        if (scRow?.bats) r.bats = scRow.bats;
-        if (scRow?.throws) r.throws = scRow.throws;
-      }
-      r.splits[s] = d;
-    }
-  });
-  return [...byId.values()];
-}
-
 export default function Team() {
   const { id, season: sParam } = useParams();
   const teamId = Number(id);
   const season = Number(sParam) || Number(today().slice(0, 4));
   const nav = useNavigate();
   const t = teamById[teamId];
-  const [tab, setTab] = useState('roster');
+  const [tab, setTab] = useState('summary');
 
   const standings = useAsync(() => getStandings(season), [season]);
   const rec = useMemo(() => {
@@ -83,11 +51,16 @@ export default function Team() {
         </div>
       </div>
       <div className="tabs">
-        {[['roster', 'Roster & Stats'], ['depth', 'Depth Chart & Lineups'], ['schedule', 'Schedule & Results'], ['splits', 'Team Splits']].map(([k, l]) => (
+        {[['summary', 'Summary'], ['roster', 'Roster & Stats'], ['platoon', 'Platoon & Optimizer'], ['depth', 'Depth Chart'], ['lineups', 'Batting Orders'],
+          ['schedule', 'Schedule'], ['splits', 'Team Splits'], ['tx', 'Transactions']].map(([k, l]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
+      {tab === 'summary' && <Summary teamId={teamId} season={season} rec={rec} />}
       {tab === 'roster' && <RosterStats teamId={teamId} season={season} />}
+      {tab === 'platoon' && <Platoon teamId={teamId} season={season} />}
+      {tab === 'lineups' && <Lineups teamId={teamId} season={season} />}
+      {tab === 'tx' && <Transactions teamId={teamId} season={season} />}
       {tab === 'depth' && <Depth teamId={teamId} season={season} />}
       {tab === 'schedule' && <Schedule teamId={teamId} season={season} />}
       {tab === 'splits' && <TeamSplits teamId={teamId} season={season} />}
@@ -200,26 +173,56 @@ function Schedule({ teamId, season }) {
 }
 
 function TeamSplits({ teamId, season }) {
-  const hit = useAsync(() => teamPlayers(teamId, season, 'hitting'), [teamId, season]);
-  const pit = useAsync(() => teamPlayers(teamId, season, 'pitching'), [teamId, season]);
+  const hit = useAsync(() => loadTeamSeason(season, 'hitting'), [season]);
+  const pit = useAsync(() => loadTeamSeason(season, 'pitching'), [season]);
   if (hit.loading || pit.loading) return <Loading />;
-  const sum = (rows, s, g) => {
-    const t = (rows || []).reduce((a, r) => (r.splits[s] ? addLines(a, r.splits[s]) : a), {});
-    return g === 'hitting' ? deriveHitting(t, season) : derivePitching(t, season);
+  const keysH = ['PA', 'AVG', 'OBP', 'SLG', 'K%', 'BB%', 'ISO', 'wOBA', 'xwOBA', 'wRCplus', 'Barrel%', 'HardHit%', 'Chase%', 'Whiff%'];
+  const keysP = ['TBF', 'ERA', 'FIP', 'K%', 'BB%', 'K-BB%', 'wOBA', 'xwOBA', 'wRCplusAllowed', 'Barrel%', 'GB%', 'Chase%', 'Whiff%'];
+  const mk = (rows, g, keys, labels) => {
+    const me = rows?.find((r) => r.id === teamId);
+    const rank = (s, k) => {
+      const v = me?.splits?.[s]?.[k];
+      if (v == null) return null;
+      const hb = statDef(g, k).hb !== false;
+      const vals = rows.map((r) => r.splits?.[s]?.[k]).filter((x) => x != null).sort((a, b) => (hb ? b - a : a - b));
+      return vals.indexOf(v) + 1;
+    };
+    return {
+      rows: ['all', 'vL', 'vR'].flatMap((s, i) => (me?.splits?.[s] ? [
+        { _key: s, split: labels[i], ...me.splits[s] },
+        { _key: `${s}-rk`, split: 'MLB rank', sub: true, ...Object.fromEntries(keys.map((k) => [k, rank(s, k)])) },
+      ] : [])),
+      cols: [{ key: 'split', label: 'Split', left: true, sticky: true, render: (r) => (r.sub ? <span className="muted small">{r.split}</span> : <b>{r.split}</b>) },
+        ...keys.map((k) => { const d = statDef(g, k); return { key: k, label: d.label, f: (v, r) => v, render: (r) => (r.sub ? <span className="muted small">{r[k] ?? ''}</span> : d.f(r[k])) }; })],
+    };
   };
-  const keysH = ['PA', 'AVG', 'OBP', 'SLG', 'K%', 'BB%', 'wOBA', 'wRCplus'];
-  const keysP = ['TBF', 'K%', 'BB%', 'ERA', 'FIP', 'wOBA', 'wRCplusAllowed'];
-  const mk = (rows, g, keys, labels) => ({
-    rows: ['all', 'vL', 'vR'].map((s, i) => ({ _key: s, split: labels[i], ...sum(rows, s, g) })),
-    cols: [{ key: 'split', label: 'Split', left: true }, ...keys.map((k) => { const d = statDef(g, k); return { key: k, label: d.label, f: d.f }; })],
-  });
   const h = mk(hit.data, 'hitting', keysH, ['Total', 'vs LHP', 'vs RHP']);
   const p = mk(pit.data, 'pitching', keysP, ['Total', 'vs LHB', 'vs RHB']);
   return (
-    <div className="grid g2">
-      <div><h3>Team batting</h3><DataTable rows={h.rows} cols={h.cols} /></div>
-      <div><h3>Team pitching</h3><DataTable rows={p.rows} cols={p.cols} /></div>
-    </div>
+    <>
+      <h3>Team batting</h3><DataTable rows={h.rows} cols={h.cols} />
+      <h3>Team pitching</h3><DataTable rows={p.rows} cols={p.cols} />
+      <p className="small muted">Counting stats from MLB; Statcast columns from the pipeline’s team aggregates. Rank is among all 30 teams in that split.</p>
+    </>
   );
 }
 
+function Transactions({ teamId, season }) {
+  const tx = useAsync(() => getTeamTransactions(teamId, `${season}-01-01`, `${season}-12-31`), [teamId, season]);
+  const [q, setQ] = useState('');
+  if (tx.loading) return <Loading what="transactions" />;
+  const list = (tx.data?.transactions || []).filter((t) => !q || (t.description || '').toLowerCase().includes(q.toLowerCase())).reverse();
+  return (
+    <>
+      <input type="search" placeholder="Filter (e.g. injured, traded, recalled)…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: '100%', maxWidth: 420 }} aria-label="Filter transactions" />
+      <div className="panel" style={{ marginTop: 10 }}>
+        {list.slice(0, 300).map((t, i) => (
+          <div key={i} className="small" style={{ padding: '6px 0', borderBottom: '1px solid var(--line)' }}>
+            <span className="mono muted">{t.date}</span> <span className="pill">{t.typeDesc}</span> {t.description}
+          </div>
+        ))}
+        {!list.length && <div className="muted small">No transactions.</div>}
+      </div>
+    </>
+  );
+}
